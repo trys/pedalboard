@@ -1,0 +1,198 @@
+/* Reset */
+body {
+  margin: 0;
+}
+
+blockquote,
+pre,
+ol,
+ul,
+figure {
+  padding: 0;
+  margin: 0;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+  height: auto;
+  border: none;
+}
+
+article,
+aside,
+figure,
+footer,
+header,
+aside,
+main,
+nav {
+  display: block;
+}
+
+html {
+    box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+iframe {
+  border: none;
+}
+
+li {
+    list-style: none;
+}
+
+ul,
+ol,
+p {
+    margin: 0;
+}
+
+button {
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    box-shadow: none;
+    border-radius: 0;
+    border: none;
+}
+
+/* Global */
+body {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font: 400 100%/1.625 'SF Pro Text', -apple-system, BlinkMacSystemFont,
+        Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji,
+        Segoe UI Emoji, Segoe UI Symbol;
+}
+
+/* Pedals */
+.pedalboard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: #222;
+    padding: 40px 0;
+}
+
+.pedal {
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    padding: 20px 20px;
+    margin: 20px;
+    flex-basis: 280px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    color: #FFF;
+    position: relative;
+    text-shadow: -0.05em 0.05em rgba(0, 0, 0, 0.2);
+}
+
+.pedal:after {
+    content: attr(data-type);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    font-size: 0.8em;
+    margin: 1rem 0 0;
+}
+
+.pedal__controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 280px;
+    flex: 1;
+}
+
+.pedal__controls > * {
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-basis: calc(50% - 20px);
+}
+
+.pedal__controls label {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.pedal__controls input {
+    position: absolute; 
+    overflow: hidden; 
+    clip: rect(0 0 0 0); 
+    height: 1px;
+    width: 1px; 
+    margin: -1px;
+    padding: 0;
+    border: 0; 
+}
+
+.pedal__knob {
+    width: 70px;
+    height: 70px;
+    border-radius: 100%;
+    background: #FFF;
+    border: 1px solid #BBB;
+    position: relative;
+}
+
+.pedal__knob:after {
+    content: '';
+    position: absolute;
+    height: 40%;
+    width: 2px;
+    background: #888;
+    left: 50%;
+    top: 10%;
+    margin: 0 0 0 -1px;
+    transform-origin: 50% 100%;
+    transform: rotate(-150deg);
+}
+
+.pedal__on-off {
+    width: 60px;
+    height: 60px;
+    border-radius: 100%;
+    background: #FFF;
+    box-shadow: inset 0 0 0 10px #DDD;
+    overflow: hidden;
+    white-space: nowrap;
+    text-indent: 200%;
+    border: 1px solid #BBB;
+}
+
+/* Chorus */
+.pedal--chorus {
+    background: linear-gradient(#4bccc8, #9fd6e8);
+}
+
+/* Boost */
+.pedal--boost {
+    background: linear-gradient(#FF5722, #eca438);
+}
+
+/* Tremolo */
+.pedal--tremolo {
+    background: linear-gradient(#673AB7, #460b50);
+}
+
+/* Delay */
+.pedal--delay {
+    background: linear-gradient(#bfe0df, #6d8790);
+}

@@ -27,7 +27,8 @@ const load = () => {
     const wrapper = document.createElement('li');
 
     wrapper.innerHTML = `<label for="${type}_${name}">${label}</label>
-    <input type="range" id="${type}_${name}" name="${name}" min="${min}" max="${max}" value="${value}" step="${step}" />`;
+    <input type="range" id="${type}_${name}" name="${name}" min="${min}" max="${max}" value="${value}" step="${step}" />
+    <button type="button" class="pedal__knob"></button>`;
 
     if (onInput) {
       wrapper.querySelector('input').addEventListener('input', onInput);
@@ -75,14 +76,26 @@ const load = () => {
     return wrapper;
   };
 
-  const createPedal = ({ name }) => {
+  const createPedal = ({ name, label }) => {
     const pedal = document.createElement('div');
     const list = document.createElement('ul');
+    const title = document.createElement('h2');
+    const onOff = document.createElement('button');
+
+    title.innerText = label;
 
     pedal.classList.add('pedal');
     pedal.classList.add(`pedal--${name}`);
     pedal.dataset.type = name;
+
+    list.classList.add('pedal__controls');
+
+    onOff.innerText = 'Enable / Disable';
+    onOff.classList.add('pedal__on-off');
+
     pedal.appendChild(list);
+    pedal.appendChild(title);
+    pedal.appendChild(onOff);
 
     return pedal;
   };
@@ -119,7 +132,7 @@ const load = () => {
     delayGain.connect(output);
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'delay' });
+    const pedal = createPedal({ name: 'delay', label: 'setTimeout' });
 
     createRotaryKnob({
       pedal,
@@ -193,7 +206,7 @@ const load = () => {
     lfo.start();
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'tremolo' });
+    const pedal = createPedal({ name: 'tremolo', label: '<blink />' });
 
     createRotaryKnob({
       pedal,
@@ -284,12 +297,30 @@ const load = () => {
     lfo.start();
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'chorus' });
+    const pedal = createPedal({ name: 'chorus', label: 'float' });
+
+    createRotaryKnob({
+      pedal,
+      name: 'mix',
+      label: 'Mix',
+      max: 4,
+      onInput: updatePot(lfo.frequency),
+      value: defaults.speed
+    });
 
     createRotaryKnob({
       pedal,
       name: 'speed',
       label: 'Speed',
+      max: 4,
+      onInput: updatePot(lfo.frequency),
+      value: defaults.speed
+    });
+
+    createRotaryKnob({
+      pedal,
+      name: 'depth',
+      label: 'Depth',
       max: 4,
       onInput: updatePot(lfo.frequency),
       value: defaults.speed
@@ -316,7 +347,7 @@ const load = () => {
     input.connect(output);
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'boost' });
+    const pedal = createPedal({ name: 'boost', label: '!important' });
 
     createRotaryKnob({
       pedal,
@@ -335,11 +366,11 @@ const load = () => {
   navigator.mediaDevices
     .getUserMedia({ audio: true, video: false })
     .then(stream => {
-      const source = ctx.createMediaStreamSource(stream);
-      // const source = ctx.createMediaElementSource(audio);
+      // const source = ctx.createMediaStreamSource(stream);
+      const source = ctx.createMediaElementSource(audio);
 
-      // audio.currentTime = 41;
-      // audio.play();
+      audio.currentTime = 41;
+      audio.play();
 
       const pedals = [chorusPedal, delayPedal, tremoloPedal, boostPedal];
 
@@ -352,6 +383,8 @@ const load = () => {
 };
 
 (() => {
+  load();
+
   const starter = document.querySelector('.start');
   if (starter) {
     const getStarted = () => {
