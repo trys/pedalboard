@@ -13,13 +13,43 @@ const load = () => {
     };
   };
 
-  const createRotaryKnob = ({ type, name, label, min = 0, max = 1, step = 0.01, value = 0, onInput }) => {
+  const createRotaryKnob = ({ pedal, name, label, min = 0, max = 1, step = 0.01, value = 0, onInput }) => {
+    const type = pedal.dataset.type;
     const wrapper = document.createElement('li');
+
     wrapper.innerHTML = `<label for="${type}_${name}">${label}</label>
     <input type="range" id="${type}_${name}" name="${name}" min="${min}" max="${max}" value="${value}" step="${step}" />`
 
     if (onInput) {
       wrapper.querySelector('input').addEventListener('input', onInput);
+    }
+
+    const $list = pedal.querySelector('ul');
+    if ($list) {
+      $list.appendChild(wrapper);
+    }
+
+    return wrapper;
+  }
+
+  const createSwitch = ({ pedal, name, label, value = 0, onInput, options = [] }) => {
+    const type = pedal.dataset.type;
+    const wrapper = document.createElement('li');
+
+    wrapper.innerHTML = `<label for="${type}_${name}">${label}</label>
+    <select id="${type}_${name}" name="${name}"/>
+      ${options.map(({ label, value: val }) => {
+        return `<option value="${val}"${value === val ? ' selected' : ''}>${label}</option>`;
+      }).join('')}
+    </select>`
+
+    if (onInput) {
+      wrapper.querySelector('select').addEventListener('change', onInput);
+    }
+
+    const $list = pedal.querySelector('ul');
+    if ($list) {
+      $list.appendChild(wrapper);
     }
 
     return wrapper;
@@ -28,13 +58,17 @@ const load = () => {
   const createPedal = ({ name }) => {
     const pedal = document.createElement('div');
     const list  = document.createElement('ul');
+
     pedal.classList.add('pedal');
     pedal.classList.add(`pedal--${name}`)
+    pedal.dataset.type = name;
     pedal.appendChild(list)
-    return [pedal, list];
+
+    return pedal;
   }
 
   const delayPedal = function(input) {
+    // Default settings
     const defaults = {
       tone: 1200,
       speed: 0.8,
@@ -42,17 +76,20 @@ const load = () => {
       feedback: 0.35
     };
 
+    // Create audio nodes
     const delayGain = ctx.createGain();
     const feedback = ctx.createGain();
     const delay = ctx.createDelay();
     const filter = ctx.createBiquadFilter();
     const output = ctx.createGain();
 
+    // Set default values
     delay.delayTime.value = defaults.speed;
     feedback.gain.value = defaults.feedback;
     delayGain.gain.value = defaults.mix;
     filter.frequency.value = defaults.tone;
 
+    // Connect the nodes togther
     input.connect(output);
     input.connect(filter);
     filter.connect(delay);
@@ -61,39 +98,39 @@ const load = () => {
     delayGain.connect(delay);
     delayGain.connect(output);
 
-
-    const [$el, $list] = createPedal({ name: 'delay' });    
+    // Create the DOM nodes
+    const pedal = createPedal({ name: 'delay' });    
     
-    const $mix = createRotaryKnob({
+    createRotaryKnob({
+      pedal,
       name: 'mix',
       label: 'Mix',
-      type: 'delay',
       onInput: updatePot(delayGain.gain),
       value: defaults.mix
     });
     
-    const $feedback = createRotaryKnob({
+    createRotaryKnob({
+      pedal,
       name: 'feedback',
       label: 'Feedback',
-      type: 'delay',
       max: 0.7,
       onInput: updatePot(feedback.gain),
       value: defaults.feedback
     });
     
-    const $speed = createRotaryKnob({
+    createRotaryKnob({
+      pedal,
       name: 'speed',
       label: 'Speed',
-      type: 'delay',
       max: 1.5,
       onInput: updatePot(delay.delayTime),
       value: defaults.speed
     });
     
-    const $tone = createRotaryKnob({
+    createRotaryKnob({
+      pedal,
       name: 'tone',
       label: 'Tone',
-      type: 'delay',
       min: 200,
       max: 6000,
       step: 200,
@@ -101,33 +138,32 @@ const load = () => {
       value: defaults.tone
     });
 
-    $list.appendChild($mix);
-    $list.appendChild($feedback);
-    $list.appendChild($speed);
-    $list.appendChild($tone);
-
-    $pedalboard.appendChild($el);
+    $pedalboard.appendChild(pedal);
 
     return output;
   };
 
   const tremoloPedal = function(input, selector) {
+    // Default settings
     const defaults = {
       speed: 1,
       depth: 1,
       wave: 'sine'
     };
 
+    // Create audio nodes
     const output = ctx.createGain();
     const lfo = ctx.createOscillator();
     const tremolo = ctx.createGain();
     const depthIn = ctx.createGain();
     const depthOut = ctx.createGain();
 
+    // Set default values
     lfo.frequency.value = defaults.speed;
     depthIn.gain.value = 1 - defaults.depth;
     depthOut.gain.value = defaults.depth;
 
+    // Connect the nodes togther
     lfo.connect(tremolo);
     input.connect(tremolo.gain);
     tremolo.connect(depthOut);
@@ -136,35 +172,46 @@ const load = () => {
     depthIn.connect(output);
     lfo.start();
 
-    const [$el, $list] = createPedal({ name: 'tremolo' });    
+    // Create the DOM nodes
+    const pedal = createPedal({ name: 'tremolo' });    
     
-    const $speed = createRotaryKnob({
+    createRotaryKnob({
+      pedal,
       name: 'speed',
       label: 'Speed',
-      type: 'tremolo',
       max: 4,
       onInput: updatePot(lfo.frequency),
       value: defaults.speed
     });
 
-    const $depth = createRotaryKnob({
+    createRotaryKnob({
+      pedal,
       name: 'depth',
       label: 'Depth',
-      type: 'tremolo',
-      value: defaults.depth
-    });
-    $depth.querySelector('input').addEventListener('input', (event) => {
-      depthIn.gain.value = 1 - Number(event.target.value);
-      depthOut.gain.value = Number(event.target.value);
-      // set value at time?
+      value: defaults.depth,
+      onInput: (event) => {
+        depthIn.gain.value = 1 - Number(event.target.value);
+        depthOut.gain.value = Number(event.target.value);        
+        // set value at time?
+        // Check stereo issues
+      }
     });
 
-    $list.appendChild($speed);
-    $list.appendChild($depth);
-    $pedalboard.appendChild($el);
+    createSwitch({
+      pedal,
+      name: 'wave',
+      label: 'Wave',
+      value: defaults.wave,
+      onInput: updatePot(lfo.type),
+      options: [
+        { label: 'Sine', value: 'sine' },
+        { label: 'Square', value: 'square' },
+        { label: 'Sawtooth', value: 'sawtooth' },
+        { label: 'Triangle', value: 'triangle' },
+      ]
+    });
 
-    // controls.wave.value = String(defaults.wave);
-    // controls.wave.addEventListener('input', updatePot(lfo.type));
+    $pedalboard.appendChild(pedal);
 
     return output;
   };
@@ -173,10 +220,10 @@ const load = () => {
     .getUserMedia({ audio: true, video: false })
     .then(stream => {
       // const source = ctx.createMediaStreamSource(stream);
+      const source = ctx.createMediaElementSource(audio);
 
       // audio.currentTime = 41;
       // audio.play();
-      const source = ctx.createMediaElementSource(stream);
 
       const pedal1 = delayPedal(source);
       const pedal2 = tremoloPedal(pedal1);
