@@ -79,14 +79,14 @@ body {
     flex-wrap: wrap;
     justify-content: center;
     background: #222;
-    padding: 40px 0;
+    padding: 20px 0;
 }
 
 .pedal {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
     padding: 20px 20px;
-    margin: 20px;
+    margin: 40px 20px;
     flex-basis: 280px;
     text-align: center;
     display: flex;
@@ -104,7 +104,6 @@ body {
     letter-spacing: 0.1em;
     font-weight: 600;
     font-size: 0.8em;
-    margin: 1rem 0 0;
 }
 
 .pedal__controls {
@@ -116,7 +115,7 @@ body {
 }
 
 .pedal__controls > * {
-    margin: 10px;
+    margin: 5px 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -177,6 +176,38 @@ body {
     border: 1px solid #BBB;
 }
 
+.pedal h2 {
+    margin: 1rem 0 0;
+    font-size: 1.5rem;
+}
+
+.pedal__jack {
+    position: absolute;
+    left: 25%;
+    bottom: 100%;
+    width: 40px;
+    height: 20px;
+    background: linear-gradient(to left, silver, grey);
+    transform: translateX(-50%);
+    box-shadow: 0 -2px 2px rgba(0, 0, 0, 0.8);
+    opacity: 0.2;
+}
+
+.pedal__jack + .pedal__jack {
+    left: 75%;
+}
+
+.pedal__led {
+    --pedal-led: red;
+    width: 25px;
+    height: 25px;
+    background: var(--pedal-led);
+    border-radius: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    margin: 1.5rem 0;
+    box-shadow: 0 0 20px 2px var(--pedal-led);
+}
+
 /* Chorus */
 .pedal--chorus {
     background: linear-gradient(#4bccc8, #9fd6e8);
@@ -195,4 +226,9 @@ body {
 /* Delay */
 .pedal--delay {
     background: linear-gradient(#bfe0df, #6d8790);
+}
+
+/* Reverb */
+.pedal--reverb {
+    background: linear-gradient(#e689d1, #ab6e4a);
 }

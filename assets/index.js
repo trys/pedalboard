@@ -82,20 +82,18 @@ const load = () => {
     const title = document.createElement('h2');
     const onOff = document.createElement('button');
 
+    pedal.innerHTML = `<ul class="pedal__controls"></ul>
+    <output class="pedal__led"></output>
+    <button class="pedal__on-off">Enable / Disable</button>
+    <h2>${label}</h2>
+    <span class="pedal__jack"></span>
+    <span class="pedal__jack"></span>`;
+
     title.innerText = label;
 
     pedal.classList.add('pedal');
     pedal.classList.add(`pedal--${name}`);
     pedal.dataset.type = name;
-
-    list.classList.add('pedal__controls');
-
-    onOff.innerText = 'Enable / Disable';
-    onOff.classList.add('pedal__on-off');
-
-    pedal.appendChild(list);
-    pedal.appendChild(title);
-    pedal.appendChild(onOff);
 
     return pedal;
   };
@@ -206,7 +204,7 @@ const load = () => {
     lfo.start();
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'tremolo', label: '<blink />' });
+    const pedal = createPedal({ name: 'tremolo', label: '&lt;blink /&gt;' });
 
     createRotaryKnob({
       pedal,
@@ -363,16 +361,54 @@ const load = () => {
     return output;
   };
 
+  const reverbPedal = function(input) {
+    // Default settings
+    const defaults = {
+      gain: 1.25
+    };
+
+    // Create audio nodes
+    const output = ctx.createGain();
+
+    // Set default values
+    output.gain.value = defaults.gain;
+
+    // Connect the nodes togther
+    input.connect(output);
+
+    // Create the DOM nodes
+    const pedal = createPedal({ name: 'reverb', label: 'spacer.gif' });
+
+    createRotaryKnob({
+      pedal,
+      name: 'mix',
+      label: 'Mix',
+      max: 3,
+      onInput: updatePot(output.gain),
+      value: defaults.gain
+    });
+
+    $pedalboard.appendChild(pedal);
+
+    return output;
+  };
+
   navigator.mediaDevices
     .getUserMedia({ audio: true, video: false })
     .then(stream => {
       // const source = ctx.createMediaStreamSource(stream);
       const source = ctx.createMediaElementSource(audio);
 
-      audio.currentTime = 41;
-      audio.play();
+      // audio.currentTime = 41;
+      // audio.play();
 
-      const pedals = [chorusPedal, delayPedal, tremoloPedal, boostPedal];
+      const pedals = [
+        boostPedal,
+        chorusPedal,
+        delayPedal,
+        reverbPedal,
+        tremoloPedal
+      ];
 
       const output = pedals.reduce((input, pedal) => {
         return pedal(input);
