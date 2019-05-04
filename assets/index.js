@@ -336,9 +336,6 @@ const load = () => {
       onInput: event => {
         depthIn.gain.value = 1 - Number(event.target.value);
         depthOut.gain.value = Number(event.target.value);
-        // set value at time?
-        // Check stereo issues
-        // Look at custom lfo curve
       }
     });
 
@@ -538,11 +535,11 @@ const load = () => {
   navigator.mediaDevices
     .getUserMedia({ audio: true, video: false })
     .then(stream => {
-      // const source = ctx.createMediaStreamSource(stream);
-      const source = ctx.createMediaElementSource(audio);
+      const source = ctx.createMediaStreamSource(stream);
+      // const source = ctx.createMediaElementSource(audio);
 
-      audio.currentTime = 41;
-      audio.play();
+      // audio.currentTime = 41;
+      // audio.play();
 
       const pedals = [
         boostPedal,
@@ -561,7 +558,7 @@ const load = () => {
 };
 
 (() => {
-  load();
+  // load();
 
   const starter = document.querySelector('.start');
   if (starter) {
