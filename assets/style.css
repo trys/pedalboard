@@ -3,6 +3,11 @@ body {
   margin: 0;
 }
 
+html,
+body {
+    min-height: 100vh;
+}
+
 blockquote,
 pre,
 ol,
@@ -61,6 +66,7 @@ button {
     font: inherit;
     box-shadow: none;
     border-radius: 0;
+    background: transparent;
     border: none;
 }
 
@@ -71,6 +77,24 @@ body {
     font: 400 100%/1.625 'SF Pro Text', -apple-system, BlinkMacSystemFont,
         Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji,
         Segoe UI Emoji, Segoe UI Symbol;
+    background: #222;
+    color: #FFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Starter */
+.starter button {
+    background: #FFF;
+    color: #222;
+    font-weight: 700;
+    font-size: 1.25rem;
+    padding: 1rem 2rem;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+    margin: 0 5px;
 }
 
 /* Pedals */
@@ -78,8 +102,8 @@ body {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    background: #222;
     padding: 20px 0;
+    width: 100%;
 }
 
 .pedal {
@@ -87,13 +111,12 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
     padding: 20px 0;
     margin: 40px 10px;
-    flex-basis: 260px;
+    flex-basis: 220px;
     text-align: center;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    color: #FFF;
     position: relative;
     text-shadow: -0.05em 0.05em rgba(0, 0, 0, 0.2);
 }
@@ -115,7 +138,7 @@ body {
 }
 
 .pedal__controls > * {
-    margin: 5px 10px;
+    margin: 5px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -128,7 +151,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.1em;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
 }
 
 .pedal__controls input,
@@ -144,8 +167,8 @@ body {
 }
 
 .pedal__knob {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
     border-radius: 100%;
     background: #FFF;
     border: 1px solid #BBB;
@@ -194,7 +217,7 @@ body {
     background: var(--pedal-led);
     border-radius: 100%;
     border: 1px solid rgba(0, 0, 0, 0.2);
-    margin: 1.5rem 0;
+    margin: 1.5rem 0 1rem;
 }
 
 .pedal__on-off input:checked ~ .pedal__led {
@@ -203,7 +226,7 @@ body {
 }
 
 .pedal h2 {
-    margin: 1rem 0 0;
+    margin: 0.5rem 0 0;
     font-size: 1.5rem;
 }
 

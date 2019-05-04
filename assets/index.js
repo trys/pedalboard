@@ -1,4 +1,4 @@
-const load = async () => {
+const load = async LIVE => {
   const ctx = new window.AudioContext();
   const audio = document.querySelector('audio');
   const $pedalboard = document.querySelector('.pedalboard');
@@ -206,7 +206,7 @@ const load = async () => {
     // Default settings
     const defaults = {
       tone: 1200,
-      speed: 0.8,
+      speed: 0.45,
       mix: 0.6,
       feedback: 0.35,
       active: false,
@@ -372,7 +372,7 @@ const load = async () => {
     // Default settings
     const defaults = {
       speed: 1,
-      mix: 0.4,
+      mix: 0.3,
       active: false
     };
 
@@ -576,7 +576,7 @@ const load = async () => {
   const reverbPedal = function(input, index) {
     // Default settings
     const defaults = {
-      mix: 0.3,
+      mix: 0.2,
       active: true
     };
 
@@ -658,7 +658,6 @@ const load = async () => {
   navigator.mediaDevices
     .getUserMedia({ audio: true, video: false })
     .then(stream => {
-      const LIVE = true;
       let source;
 
       if (LIVE) {
@@ -688,15 +687,12 @@ const load = async () => {
 };
 
 (() => {
-  // load();
+  const getStarted = () => {
+    load(event.target.classList.contains('start--live'));
+    event.target.parentNode.remove();
+  };
 
-  const starter = document.querySelector('.start');
-  if (starter) {
-    const getStarted = () => {
-      load();
-      starter.removeEventListener('click', getStarted);
-      starter.remove();
-    };
-    starter.addEventListener('click', getStarted);
-  }
+  [].forEach.call(document.querySelectorAll('.start'), el => {
+    el.addEventListener('click', getStarted);
+  });
 })();
