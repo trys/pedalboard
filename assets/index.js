@@ -76,15 +76,18 @@ const load = () => {
     return wrapper;
   };
 
-  const createPedal = ({ name, label }) => {
+  const createPedal = ({ name, label, toggle, active }) => {
     const pedal = document.createElement('div');
     const list = document.createElement('ul');
     const title = document.createElement('h2');
     const onOff = document.createElement('button');
 
     pedal.innerHTML = `<ul class="pedal__controls"></ul>
-    <output class="pedal__led"></output>
-    <button class="pedal__on-off">Enable / Disable</button>
+    <div class="pedal__on-off">
+      <input id="${name}_active" type="checkbox" ${active ? 'checked' : ''} />
+      <output class="pedal__led"></output>
+      <label for="${name}_active">Enable / Disable</label>
+    </div>
     <h2>${label}</h2>
     <span class="pedal__jack"></span>
     <span class="pedal__jack"></span>`;
@@ -95,33 +98,42 @@ const load = () => {
     pedal.classList.add(`pedal--${name}`);
     pedal.dataset.type = name;
 
+    pedal
+      .querySelector('[type="checkbox"]')
+      .addEventListener('change', () => toggle());
+
     return pedal;
   };
 
-  const toggleOnOff = (dry, wet, on) => {
-    const val = on === undefined ? !!wet.gain.value : on;
+  const toggleOnOff = (dry, wet) => {
+    return on => {
+      const active = on === undefined ? !!dry.gain.value : on;
 
-    if (on) {
-      wet.gain.value = 1;
-      dry.gain.value = 0;
-    } else {
-      wet.gain.value = 0;
-      dry.gain.value = 1;
-    }
+      if (active) {
+        wet.gain.value = 1;
+        dry.gain.value = 0;
+      } else {
+        wet.gain.value = 0;
+        dry.gain.value = 1;
+      }
+    };
   };
 
-  const createInputSwitch = ({ on = false, input }) => {
+  const createInputSwitch = (input, output, active = false) => {
     const dry = ctx.createGain();
     const wet = ctx.createGain();
     const out = ctx.createGain();
 
-    toggleOnOff(dry, wet, on);
+    const toggle = toggleOnOff(dry, wet);
+    toggle(active);
 
     input.connect(dry);
-    input.connect(wet);
+    output.connect(wet);
 
     dry.connect(out);
     wet.connect(out);
+
+    return [out, toggle];
   };
 
   const delayPedal = function(input) {
@@ -130,15 +142,16 @@ const load = () => {
       tone: 1200,
       speed: 0.8,
       mix: 0.6,
-      feedback: 0.35
+      feedback: 0.35,
+      active: false
     };
 
     // Create audio nodes
+    const sum = ctx.createGain();
     const delayGain = ctx.createGain();
     const feedback = ctx.createGain();
     const delay = ctx.createDelay();
     const filter = ctx.createBiquadFilter();
-    const output = ctx.createGain();
 
     // Set default values
     delay.delayTime.value = defaults.speed;
@@ -147,16 +160,23 @@ const load = () => {
     filter.frequency.value = defaults.tone;
 
     // Connect the nodes togther
-    input.connect(output);
+    input.connect(sum);
     input.connect(filter);
     filter.connect(delay);
     delay.connect(feedback);
     feedback.connect(delayGain);
     delayGain.connect(delay);
-    delayGain.connect(output);
+    delayGain.connect(sum);
+
+    const [output, toggle] = createInputSwitch(input, sum, defaults.active);
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'delay', label: 'setTimeout' });
+    const pedal = createPedal({
+      name: 'delay',
+      label: 'setTimeout',
+      toggle,
+      active: defaults.active
+    });
 
     createRotaryKnob({
       pedal,
@@ -205,15 +225,18 @@ const load = () => {
     const defaults = {
       speed: 3,
       depth: 0.4,
-      wave: 'sine'
+      wave: 'sine',
+      active: false
     };
 
     // Create audio nodes
-    const output = ctx.createGain();
+    const sum = ctx.createGain();
     const lfo = ctx.createOscillator();
     const tremolo = ctx.createGain();
     const depthIn = ctx.createGain();
     const depthOut = ctx.createGain();
+
+    const [output, toggle] = createInputSwitch(input, sum, defaults.active);
 
     // Set default values
     lfo.frequency.value = defaults.speed;
@@ -224,13 +247,18 @@ const load = () => {
     lfo.connect(tremolo.gain);
     input.connect(tremolo);
     tremolo.connect(depthOut);
-    depthOut.connect(output);
+    depthOut.connect(sum);
     input.connect(depthIn);
-    depthIn.connect(output);
+    depthIn.connect(sum);
     lfo.start();
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'tremolo', label: '&lt;blink /&gt;' });
+    const pedal = createPedal({
+      name: 'tremolo',
+      label: '&lt;blink /&gt;',
+      toggle,
+      active: defaults.active
+    });
 
     createRotaryKnob({
       pedal,
@@ -278,13 +306,16 @@ const load = () => {
     // Default settings
     const defaults = {
       speed: 1,
-      mix: 1
+      mix: 1,
+      active: false
     };
 
     // Create audio nodes
-    const output = ctx.createGain();
+    const sum = ctx.createGain();
     const lfo = ctx.createOscillator();
     const chorus = ctx.createDelay();
+
+    const [output, toggle] = createInputSwitch(input, sum, defaults.active);
 
     // Set default values
     lfo.frequency.value = defaults.speed;
@@ -315,14 +346,19 @@ const load = () => {
     }, 10);
 
     // Connect the nodes togther
-    input.connect(output);
+    input.connect(sum);
     input.connect(chorus);
-    chorus.connect(output);
+    chorus.connect(sum);
     // lfo.connect(chorus.delayTime);
     lfo.start();
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'chorus', label: 'float' });
+    const pedal = createPedal({
+      name: 'chorus',
+      label: 'float',
+      toggle,
+      active: defaults.active
+    });
 
     createRotaryKnob({
       pedal,
@@ -359,20 +395,28 @@ const load = () => {
   const boostPedal = function(input) {
     // Default settings
     const defaults = {
-      gain: 1.25
+      gain: 1.25,
+      active: false
     };
 
     // Create audio nodes
-    const output = ctx.createGain();
+    const sum = ctx.createGain();
+
+    const [output, toggle] = createInputSwitch(input, sum, defaults.active);
 
     // Set default values
-    output.gain.value = defaults.gain;
+    sum.gain.value = defaults.gain;
 
     // Connect the nodes togther
-    input.connect(output);
+    input.connect(sum);
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'boost', label: '!important' });
+    const pedal = createPedal({
+      name: 'boost',
+      label: '!important',
+      toggle,
+      active: defaults.active
+    });
 
     createRotaryKnob({
       pedal,
@@ -391,20 +435,28 @@ const load = () => {
   const reverbPedal = function(input) {
     // Default settings
     const defaults = {
-      gain: 1.25
+      gain: 1.25,
+      active: false
     };
 
     // Create audio nodes
-    const output = ctx.createGain();
+    const sum = ctx.createGain();
+
+    const [output, toggle] = createInputSwitch(input, sum, defaults.active);
 
     // Set default values
-    output.gain.value = defaults.gain;
+    sum.gain.value = defaults.gain;
 
     // Connect the nodes togther
-    input.connect(output);
+    input.connect(sum);
 
     // Create the DOM nodes
-    const pedal = createPedal({ name: 'reverb', label: 'spacer.gif' });
+    const pedal = createPedal({
+      name: 'reverb',
+      label: 'spacer.gif',
+      toggle,
+      active: defaults.active
+    });
 
     createRotaryKnob({
       pedal,
@@ -426,8 +478,8 @@ const load = () => {
       // const source = ctx.createMediaStreamSource(stream);
       const source = ctx.createMediaElementSource(audio);
 
-      // audio.currentTime = 41;
-      // audio.play();
+      audio.currentTime = 41;
+      audio.play();
 
       const pedals = [
         boostPedal,
@@ -446,7 +498,7 @@ const load = () => {
 };
 
 (() => {
-  load();
+  // load();
 
   const starter = document.querySelector('.start');
   if (starter) {

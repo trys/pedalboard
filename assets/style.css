@@ -131,6 +131,7 @@ body {
     margin-bottom: 0.5rem;
 }
 
+.pedal__on-off input,
 .pedal__controls input {
     position: absolute; 
     overflow: hidden; 
@@ -165,6 +166,12 @@ body {
 }
 
 .pedal__on-off {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pedal__on-off label {
     width: 60px;
     height: 60px;
     border-radius: 100%;
@@ -174,6 +181,23 @@ body {
     white-space: nowrap;
     text-indent: 200%;
     border: 1px solid #BBB;
+    display: block;
+    cursor: pointer;
+}
+
+.pedal__on-off .pedal__led {
+    --pedal-led: rgba(255, 255, 255, 0.4);
+    width: 25px;
+    height: 25px;
+    background: var(--pedal-led);
+    border-radius: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    margin: 1.5rem 0;
+}
+
+.pedal__on-off input:checked ~ .pedal__led {
+    --pedal-led: red;
+    box-shadow: 0 0 20px 2px var(--pedal-led);
 }
 
 .pedal h2 {
@@ -195,17 +219,6 @@ body {
 
 .pedal__jack + .pedal__jack {
     left: 75%;
-}
-
-.pedal__led {
-    --pedal-led: red;
-    width: 25px;
-    height: 25px;
-    background: var(--pedal-led);
-    border-radius: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    margin: 1.5rem 0;
-    box-shadow: 0 0 20px 2px var(--pedal-led);
 }
 
 /* Chorus */
