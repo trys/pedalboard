@@ -3,6 +3,10 @@ const load = () => {
   const audio = document.querySelector('audio');
   const $pedalboard = document.querySelector('.pedalboard');
 
+  const lerp = (x, y, a) => x * (1 - a) + y * a;
+  const invlerp = (a, b, v) => clamp((v - a) / (b - a));
+  const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
+
   if (!audio) {
     return;
   }
@@ -11,6 +15,12 @@ const load = () => {
     return event => {
       pot.value = event.target.value;
     };
+  };
+
+  const setKnob = (knob, min, max, value) => {
+    const decimal = invlerp(min, max, value);
+    const squashed = lerp(0, 300, decimal);
+    knob.style.setProperty('--percentage', squashed);
   };
 
   const createRotaryKnob = ({
@@ -28,10 +38,58 @@ const load = () => {
 
     wrapper.innerHTML = `<label for="${type}_${name}">${label}</label>
     <input type="range" id="${type}_${name}" name="${name}" min="${min}" max="${max}" value="${value}" step="${step}" />
-    <button type="button" class="pedal__knob"></button>`;
+    <button type="button" class="pedal__knob" style="--percentage: 10"></button>`;
 
     if (onInput) {
-      wrapper.querySelector('input').addEventListener('input', onInput);
+      const knob = wrapper.querySelector('button');
+      const input = wrapper.querySelector('input');
+      setKnob(knob, min, max, value);
+
+      input.addEventListener('input', event => {
+        onInput(event);
+        setKnob(knob, min, max, event.target.value);
+      });
+
+      let engaged = false;
+      let prevY = null;
+
+      const engage = event => {
+        engaged = true;
+        let prevY = event.clientY;
+        event.preventDefault();
+      };
+
+      const disengage = event => {
+        engaged = false;
+        event.preventDefault();
+      };
+
+      knob.addEventListener('mousedown', engage);
+      window.addEventListener('mouseup', disengage);
+      // knob.addEventListener('touchstart', engage);
+      // window.addEventListener('touchend', disengage);
+
+      // Add touch support
+      window.addEventListener('mousemove', event => {
+        if (engaged) {
+          if (prevY - event.clientY === 0) {
+            return;
+          }
+
+          const goingUp = prevY >= event.clientY;
+          prevY = event.clientY;
+          let diff = max / 100;
+          diff = diff < step ? step : diff;
+          input.value = Number(input.value) + diff * (goingUp ? 1 : -1);
+
+          input.dispatchEvent(
+            new Event('input', {
+              bubbles: true,
+              cancelable: true
+            })
+          );
+        }
+      });
     }
 
     const $list = pedal.querySelector('ul');
@@ -143,14 +201,15 @@ const load = () => {
       speed: 0.8,
       mix: 0.6,
       feedback: 0.35,
-      active: false
+      active: false,
+      maxDelay: 1.5
     };
 
     // Create audio nodes
     const sum = ctx.createGain();
     const delayGain = ctx.createGain();
     const feedback = ctx.createGain();
-    const delay = ctx.createDelay();
+    const delay = ctx.createDelay(defaults.maxDelay);
     const filter = ctx.createBiquadFilter();
 
     // Set default values
@@ -199,7 +258,7 @@ const load = () => {
       pedal,
       name: 'speed',
       label: 'Speed',
-      max: 1.5,
+      max: defaults.maxDelay,
       onInput: updatePot(delay.delayTime),
       value: defaults.speed
     });
@@ -478,8 +537,8 @@ const load = () => {
       // const source = ctx.createMediaStreamSource(stream);
       const source = ctx.createMediaElementSource(audio);
 
-      audio.currentTime = 41;
-      audio.play();
+      // audio.currentTime = 41;
+      // audio.play();
 
       const pedals = [
         boostPedal,
@@ -498,7 +557,7 @@ const load = () => {
 };
 
 (() => {
-  // load();
+  load();
 
   const starter = document.querySelector('.start');
   if (starter) {

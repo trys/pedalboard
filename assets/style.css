@@ -85,9 +85,9 @@ body {
 .pedal {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-    padding: 20px 20px;
-    margin: 40px 20px;
-    flex-basis: 280px;
+    padding: 20px 0;
+    margin: 40px 10px;
+    flex-basis: 260px;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -131,8 +131,8 @@ body {
     margin-bottom: 0.5rem;
 }
 
-.pedal__on-off input,
-.pedal__controls input {
+.pedal__controls input,
+.pedal__on-off input {
     position: absolute; 
     overflow: hidden; 
     clip: rect(0 0 0 0); 
@@ -150,6 +150,8 @@ body {
     background: #FFF;
     border: 1px solid #BBB;
     position: relative;
+
+    transform: rotate(calc(var(--percentage, 0) * 1deg))
 }
 
 .pedal__knob:after {
