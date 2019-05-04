@@ -1,7 +1,8 @@
-const load = () => {
+const load = async () => {
   const ctx = new window.AudioContext();
   const audio = document.querySelector('audio');
   const $pedalboard = document.querySelector('.pedalboard');
+  let buffer = null;
 
   const lerp = (x, y, a) => x * (1 - a) + y * a;
   const invlerp = (a, b, v) => clamp((v - a) / (b - a));
@@ -40,8 +41,9 @@ const load = () => {
     <input type="range" id="${type}_${name}" name="${name}" min="${min}" max="${max}" value="${value}" step="${step}" />
     <button type="button" class="pedal__knob" style="--percentage: 10"></button>`;
 
+    const knob = wrapper.querySelector('button');
+
     if (onInput) {
-      const knob = wrapper.querySelector('button');
       const input = wrapper.querySelector('input');
       setKnob(knob, min, max, value);
 
@@ -97,7 +99,7 @@ const load = () => {
       $list.appendChild(wrapper);
     }
 
-    return wrapper;
+    return knob;
   };
 
   const createSwitch = ({
@@ -134,7 +136,7 @@ const load = () => {
     return wrapper;
   };
 
-  const createPedal = ({ name, label, toggle, active }) => {
+  const createPedal = ({ name, label, toggle, active, index = 0 }) => {
     const pedal = document.createElement('div');
     const list = document.createElement('ul');
     const title = document.createElement('h2');
@@ -152,13 +154,19 @@ const load = () => {
 
     title.innerText = label;
 
+    const input = pedal.querySelector('[type="checkbox"]');
+    input.addEventListener('change', () => toggle());
+
+    window.addEventListener('MIDI', ({ detail }) => {
+      if (detail === index) {
+        input.checked = !input.checked;
+        toggle();
+      }
+    });
+
     pedal.classList.add('pedal');
     pedal.classList.add(`pedal--${name}`);
     pedal.dataset.type = name;
-
-    pedal
-      .querySelector('[type="checkbox"]')
-      .addEventListener('change', () => toggle());
 
     return pedal;
   };
@@ -194,7 +202,7 @@ const load = () => {
     return [out, toggle];
   };
 
-  const delayPedal = function(input) {
+  const delayPedal = function(input, index) {
     // Default settings
     const defaults = {
       tone: 1200,
@@ -234,7 +242,8 @@ const load = () => {
       name: 'delay',
       label: 'setTimeout',
       toggle,
-      active: defaults.active
+      active: defaults.active,
+      index
     });
 
     createRotaryKnob({
@@ -279,7 +288,7 @@ const load = () => {
     return output;
   };
 
-  const tremoloPedal = function(input) {
+  const tremoloPedal = function(input, index) {
     // Default settings
     const defaults = {
       speed: 3,
@@ -304,19 +313,20 @@ const load = () => {
 
     // Connect the nodes togther
     lfo.connect(tremolo.gain);
+    lfo.start();
     input.connect(tremolo);
     tremolo.connect(depthOut);
     depthOut.connect(sum);
     input.connect(depthIn);
     depthIn.connect(sum);
-    lfo.start();
 
     // Create the DOM nodes
     const pedal = createPedal({
       name: 'tremolo',
       label: '&lt;blink /&gt;',
       toggle,
-      active: defaults.active
+      active: defaults.active,
+      index
     });
 
     createRotaryKnob({
@@ -358,89 +368,79 @@ const load = () => {
     return output;
   };
 
-  const chorusPedal = function(input) {
+  const chorusPedal = function(input, index) {
     // Default settings
     const defaults = {
       speed: 1,
-      mix: 1,
+      mix: 0.4,
       active: false
     };
 
     // Create audio nodes
     const sum = ctx.createGain();
-    const lfo = ctx.createOscillator();
     const chorus = ctx.createDelay();
+    const mixIn = ctx.createGain();
+    const mixOut = ctx.createGain();
 
     const [output, toggle] = createInputSwitch(input, sum, defaults.active);
 
     // Set default values
-    lfo.frequency.value = defaults.speed;
+    mixIn.gain.value = 1 - defaults.mix;
+    mixOut.gain.value = defaults.mix;
 
-    let timeModulation = 0.011;
-    const offset = 0.002;
-    const max = 0.05;
-    const min = 0;
+    const step = 0.0001;
+    const min = 0.02;
+    const max = 0.024;
+    let timeModulation = min;
     let goingUp = true;
     chorus.delayTime.value = timeModulation;
 
-    setInterval(() => {
+    const modulate = () => {
       if (goingUp) {
-        timeModulation += offset;
+        timeModulation += step;
         if (timeModulation >= max) {
           goingUp = false;
         }
       } else {
-        timeModulation -= offset;
+        timeModulation -= step;
 
         if (timeModulation <= min) {
           goingUp = true;
         }
       }
 
-      // chorus.delayTime.setValueAtTime(timeModulation, ctx.currentTime);
       chorus.delayTime = timeModulation;
-    }, 10);
+      requestAnimationFrame(modulate);
+    };
+
+    requestAnimationFrame(modulate);
 
     // Connect the nodes togther
-    input.connect(sum);
     input.connect(chorus);
-    chorus.connect(sum);
-    // lfo.connect(chorus.delayTime);
-    lfo.start();
+    chorus.connect(mixOut);
+    mixOut.connect(sum);
+    input.connect(mixIn);
+    mixIn.connect(sum);
 
     // Create the DOM nodes
     const pedal = createPedal({
       name: 'chorus',
       label: 'float',
       toggle,
-      active: defaults.active
+      active: defaults.active,
+      index
     });
 
     createRotaryKnob({
       pedal,
       name: 'mix',
       label: 'Mix',
-      max: 4,
-      onInput: updatePot(lfo.frequency),
-      value: defaults.speed
-    });
-
-    createRotaryKnob({
-      pedal,
-      name: 'speed',
-      label: 'Speed',
-      max: 4,
-      onInput: updatePot(lfo.frequency),
-      value: defaults.speed
-    });
-
-    createRotaryKnob({
-      pedal,
-      name: 'depth',
-      label: 'Depth',
-      max: 4,
-      onInput: updatePot(lfo.frequency),
-      value: defaults.speed
+      max: 0.5,
+      value: defaults.mix,
+      onInput: event => {
+        mixIn.gain.value = 1 - Number(event.target.value);
+        mixOut.gain.value = Number(event.target.value);
+      }
     });
 
     $pedalboard.appendChild(pedal);
@@ -448,10 +448,10 @@ const load = () => {
     return output;
   };
 
-  const boostPedal = function(input) {
+  const boostPedal = function(input, index) {
     // Default settings
     const defaults = {
-      gain: 1.25,
+      gain: 1.5,
       active: false
     };
 
@@ -473,7 +473,8 @@ const load = () => {
       name: 'boost',
       label: '!important',
       toggle,
-      active: defaults.active
+      active: defaults.active,
+      index
     });
 
     createRotaryKnob({
@@ -490,41 +491,81 @@ const load = () => {
     return output;
   };
 
-  const reverbPedal = function(input) {
+  const wahPedal = function(input, index) {
     // Default settings
     const defaults = {
-      gain: 1.25,
-      active: false
+      frequency: 1000,
+      q: 1000,
+      boost: 1.5,
+      active: false,
+      filterMin: 100,
+      filterMax: 1500
     };
 
     // Create audio nodes
     const sum = ctx.createGain();
     const boost = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
 
     const [output, toggle] = createInputSwitch(input, sum, defaults.active);
 
     // Set default values
-    boost.gain.value = defaults.gain;
+    boost.gain.value = defaults.boost;
+    filter.frequency.value = defaults.frequency;
+    filter.type = 'bandpass';
+    filter.q = defaults.q;
+    filter.gain.value = -40;
 
     // Connect the nodes togther
     input.connect(boost);
-    boost.connect(sum);
+    boost.connect(filter);
+    filter.connect(sum);
 
     // Create the DOM nodes
     const pedal = createPedal({
-      name: 'reverb',
-      label: 'spacer.gif',
+      name: 'wah',
+      label: '.filter()',
       toggle,
-      active: defaults.active
+      active: defaults.active,
+      index
+    });
+
+    const $filter = createRotaryKnob({
+      pedal,
+      name: 'filter',
+      label: 'Filter',
+      min: defaults.filterMin,
+      max: defaults.filterMax,
+      step: 20,
+      onInput: updatePot(filter.frequency),
+      value: defaults.frequency
+    });
+
+    window.addEventListener('MIDIEXP', ({ detail }) => {
+      const decimal = invlerp(0, 127, detail);
+      const val = lerp(defaults.filterMin, defaults.filterMax, decimal);
+      filter.frequency.value = val;
+      setKnob($filter, 0, 127, detail);
     });
 
     createRotaryKnob({
       pedal,
-      name: 'mix',
-      label: 'Mix',
-      max: 3,
+      name: 'q',
+      label: 'Q',
+      min: 0.001,
+      max: 1000,
+      step: 10,
+      onInput: updatePot(filter.q),
+      value: defaults.q
+    });
+
+    createRotaryKnob({
+      pedal,
+      name: 'boost',
+      label: 'Boost',
+      max: 4,
       onInput: updatePot(boost.gain),
-      value: defaults.gain
+      value: defaults.boost
     });
 
     $pedalboard.appendChild(pedal);
@@ -532,16 +573,105 @@ const load = () => {
     return output;
   };
 
+  const reverbPedal = function(input, index) {
+    // Default settings
+    const defaults = {
+      mix: 0.3,
+      active: true
+    };
+
+    // Create audio nodes
+    const sum = ctx.createGain();
+    const reverb = ctx.createConvolver();
+    const mixIn = ctx.createGain();
+    const mixOut = ctx.createGain();
+
+    const [output, toggle] = createInputSwitch(input, sum, defaults.active);
+
+    // Set default values
+    mixIn.gain.value = 1 - defaults.mix;
+    mixOut.gain.value = defaults.mix;
+
+    // Connect the nodes togther
+    input.connect(reverb);
+    reverb.connect(mixOut);
+    mixOut.connect(sum);
+    input.connect(mixIn);
+    mixIn.connect(sum);
+
+    reverb.buffer = buffer;
+
+    // Create the DOM nodes
+    const pedal = createPedal({
+      name: 'reverb',
+      label: 'spacer.gif',
+      toggle,
+      active: defaults.active,
+      index
+    });
+
+    createRotaryKnob({
+      pedal,
+      name: 'mix',
+      label: 'Mix',
+      max: 1,
+      value: defaults.mix,
+      onInput: event => {
+        mixIn.gain.value = 1 - Number(event.target.value);
+        mixOut.gain.value = Number(event.target.value);
+      }
+    });
+
+    $pedalboard.appendChild(pedal);
+
+    return output;
+  };
+
+  const onMidiMessage = ({ data }) => {
+    if (data[0] === 144) {
+      window.dispatchEvent(new CustomEvent('MIDI', { detail: data[1] }));
+    }
+
+    if (data[0] === 176) {
+      window.dispatchEvent(new CustomEvent('MIDIEXP', { detail: data[2] }));
+    }
+  };
+
+  await fetch('/assets/Conic Long Echo Hall.wav')
+    .then(response => response.arrayBuffer())
+    .then(data => {
+      ctx.decodeAudioData(data, b => {
+        buffer = b;
+      });
+    });
+
+  try {
+    const midiCtx = await navigator.requestMIDIAccess();
+
+    midiCtx.inputs.forEach(entry => {
+      entry.onmidimessage = onMidiMessage;
+    });
+  } catch (e) {
+    console.log('No midi connectivity');
+  }
+
   navigator.mediaDevices
     .getUserMedia({ audio: true, video: false })
     .then(stream => {
-      const source = ctx.createMediaStreamSource(stream);
-      // const source = ctx.createMediaElementSource(audio);
+      const LIVE = true;
+      let source;
 
-      // audio.currentTime = 41;
-      // audio.play();
+      if (LIVE) {
+        source = ctx.createMediaStreamSource(stream);
+      } else {
+        source = ctx.createMediaElementSource(audio);
+
+        audio.currentTime = 41;
+        audio.play();
+      }
 
       const pedals = [
+        wahPedal,
         boostPedal,
         chorusPedal,
         delayPedal,
@@ -549,8 +679,8 @@ const load = () => {
         tremoloPedal
       ];
 
-      const output = pedals.reduce((input, pedal) => {
-        return pedal(input);
+      const output = pedals.reduce((input, pedal, index) => {
+        return pedal(input, index + 1);
       }, source);
 
       output.connect(ctx.destination);

@@ -247,3 +247,8 @@ body {
 .pedal--reverb {
     background: linear-gradient(#e689d1, #ab6e4a);
 }
+
+/* Wah */
+.pedal--wah {
+    background: linear-gradient(#222, rgb(32, 33, 41));
+}
