@@ -460,14 +460,16 @@ const load = () => {
 
     // Create audio nodes
     const sum = ctx.createGain();
+    const boost = ctx.createGain();
 
     const [output, toggle] = createInputSwitch(input, sum, defaults.active);
 
     // Set default values
-    sum.gain.value = defaults.gain;
+    boost.gain.value = defaults.gain;
 
     // Connect the nodes togther
-    input.connect(sum);
+    input.connect(boost);
+    boost.connect(sum);
 
     // Create the DOM nodes
     const pedal = createPedal({
@@ -482,7 +484,7 @@ const load = () => {
       name: 'boost',
       label: 'Boost',
       max: 3,
-      onInput: updatePot(output.gain),
+      onInput: updatePot(boost.gain),
       value: defaults.gain
     });
 
@@ -500,14 +502,16 @@ const load = () => {
 
     // Create audio nodes
     const sum = ctx.createGain();
+    const boost = ctx.createGain();
 
     const [output, toggle] = createInputSwitch(input, sum, defaults.active);
 
     // Set default values
-    sum.gain.value = defaults.gain;
+    boost.gain.value = defaults.gain;
 
     // Connect the nodes togther
-    input.connect(sum);
+    input.connect(boost);
+    boost.connect(sum);
 
     // Create the DOM nodes
     const pedal = createPedal({
@@ -522,7 +526,7 @@ const load = () => {
       name: 'mix',
       label: 'Mix',
       max: 3,
-      onInput: updatePot(output.gain),
+      onInput: updatePot(boost.gain),
       value: defaults.gain
     });
 
@@ -537,8 +541,8 @@ const load = () => {
       // const source = ctx.createMediaStreamSource(stream);
       const source = ctx.createMediaElementSource(audio);
 
-      // audio.currentTime = 41;
-      // audio.play();
+      audio.currentTime = 41;
+      audio.play();
 
       const pedals = [
         boostPedal,
