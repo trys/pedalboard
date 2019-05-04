@@ -98,6 +98,32 @@ const load = () => {
     return pedal;
   };
 
+  const toggleOnOff = (dry, wet, on) => {
+    const val = on === undefined ? !!wet.gain.value : on;
+
+    if (on) {
+      wet.gain.value = 1;
+      dry.gain.value = 0;
+    } else {
+      wet.gain.value = 0;
+      dry.gain.value = 1;
+    }
+  };
+
+  const createInputSwitch = ({ on = false, input }) => {
+    const dry = ctx.createGain();
+    const wet = ctx.createGain();
+    const out = ctx.createGain();
+
+    toggleOnOff(dry, wet, on);
+
+    input.connect(dry);
+    input.connect(wet);
+
+    dry.connect(out);
+    wet.connect(out);
+  };
+
   const delayPedal = function(input) {
     // Default settings
     const defaults = {
@@ -225,6 +251,7 @@ const load = () => {
         depthOut.gain.value = Number(event.target.value);
         // set value at time?
         // Check stereo issues
+        // Look at custom lfo curve
       }
     });
 
