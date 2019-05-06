@@ -321,3 +321,17 @@ h1 {
 .pedal--wah {
     background: linear-gradient(#222, rgb(32, 33, 41));
 }
+
+/* Error */
+
+.error {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1rem 1.5rem;
+    text-align: center;
+    width: calc(100% - 2rem);
+    max-width: 400px;
+}

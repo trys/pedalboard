@@ -636,6 +636,13 @@ const load = async LIVE => {
     return output;
   };
 
+  const onError = (message = '') => {
+    const error = document.createElement('div');
+    error.innerHTML = message;
+    error.classList.add('error');
+    document.body.appendChild(error);
+  };
+
   const onMidiMessage = ({ data }) => {
     if (data[0] === 144) {
       window.dispatchEvent(new CustomEvent('MIDI', { detail: data[1] }));
@@ -652,7 +659,8 @@ const load = async LIVE => {
       return ctx.decodeAudioData(data, b => {
         buffer = b;
       });
-    });
+    })
+    .catch(e => onError('Failed to load reverb impulse'));
 
   try {
     const midiCtx = await navigator.requestMIDIAccess();
@@ -666,10 +674,12 @@ const load = async LIVE => {
 
   let stream;
   if (LIVE) {
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: false
-    });
+    stream = await navigator.mediaDevices
+      .getUserMedia({
+        audio: true,
+        video: false
+      })
+      .catch(e => onError("Couldn't connect to your microphone 😔"));
   }
 
   let source;
