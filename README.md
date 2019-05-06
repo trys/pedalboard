@@ -6,7 +6,6 @@
 
 Things still to do:
 
-- Touch support
 - Delay & Reverb tails
 - Better tone pot trim
 - Loading and gesture trigger state

@@ -66,20 +66,14 @@ const load = async LIVE => {
         event.preventDefault();
       };
 
-      knob.addEventListener('mousedown', engage);
-      window.addEventListener('mouseup', disengage);
-      // knob.addEventListener('touchstart', engage);
-      // window.addEventListener('touchend', disengage);
-
-      // Add touch support
-      window.addEventListener('mousemove', event => {
+      const rotaryMove = Y => {
         if (engaged) {
-          if (prevY - event.clientY === 0) {
+          if (prevY - Y === 0) {
             return;
           }
 
-          const goingUp = prevY >= event.clientY;
-          prevY = event.clientY;
+          const goingUp = prevY >= Y;
+          prevY = Y;
           let diff = max / 100;
           diff = diff < step ? step : diff;
           input.value = Number(input.value) + diff * (goingUp ? 1 : -1);
@@ -91,6 +85,20 @@ const load = async LIVE => {
             })
           );
         }
+      };
+
+      knob.addEventListener('mousedown', engage);
+      window.addEventListener('mouseup', disengage);
+      knob.addEventListener('touchstart', engage);
+      window.addEventListener('touchend', disengage);
+
+      // Add touch support
+      window.addEventListener('mousemove', event => {
+        rotaryMove(event.clientY);
+      });
+
+      window.addEventListener('touchmove', event => {
+        rotaryMove(event.touches[0].clientY);
       });
     }
 
