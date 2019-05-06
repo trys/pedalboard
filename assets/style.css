@@ -101,6 +101,7 @@ body:not(.loading) .starter {
 
 h1 {
     font-size: 2rem;
+    line-height: 1.2;
     margin-top: 0;
 }
 
@@ -151,6 +152,10 @@ h1 {
     justify-content: center;
     padding: 20px 0;
     width: 100%;
+}
+
+.pedalboard:empty {
+    display: none;
 }
 
 .pedal {

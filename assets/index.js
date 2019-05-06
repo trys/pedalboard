@@ -74,7 +74,7 @@ const load = async LIVE => {
 
           const goingUp = prevY >= Y;
           prevY = Y;
-          let diff = max / 100;
+          let diff = max / 50;
           diff = diff < step ? step : diff;
           input.value = Number(input.value) + diff * (goingUp ? 1 : -1);
 
@@ -210,23 +210,45 @@ const load = async LIVE => {
     return [out, toggle];
   };
 
+  const createInputSwitchWithTails = (input, active = false) => {
+    const dry = ctx.createGain();
+    const fxSend = ctx.createGain();
+    const fxReturn = ctx.createGain();
+    const sum = ctx.createGain();
+
+    const toggle = toggleOnOff(dry, fxSend);
+    toggle(active);
+
+    input.connect(dry);
+    input.connect(fxSend);
+
+    dry.connect(sum);
+    fxReturn.connect(sum);
+
+    return [fxSend, fxReturn, sum, toggle];
+  };
+
   const delayPedal = function(input, index) {
     // Default settings
     const defaults = {
-      tone: 1800,
+      tone: 2200,
       speed: 0.45,
-      mix: 0.8,
-      feedback: 0.35,
+      mix: 0.7,
+      feedback: 0.4,
       active: true,
       maxDelay: 1.5
     };
 
     // Create audio nodes
-    const sum = ctx.createGain();
     const delayGain = ctx.createGain();
     const feedback = ctx.createGain();
     const delay = ctx.createDelay(defaults.maxDelay);
     const filter = ctx.createBiquadFilter();
+
+    const [fxSend, fxReturn, output, toggle] = createInputSwitchWithTails(
+      input,
+      defaults.active
+    );
 
     // Set default values
     delay.delayTime.value = defaults.speed;
@@ -235,15 +257,13 @@ const load = async LIVE => {
     filter.frequency.value = defaults.tone;
 
     // Connect the nodes togther
-    input.connect(sum);
-    input.connect(filter);
+    fxSend.connect(fxReturn);
+    fxSend.connect(filter);
     filter.connect(delay);
     delay.connect(feedback);
-    feedback.connect(delayGain);
-    delayGain.connect(delay);
-    delayGain.connect(sum);
-
-    const [output, toggle] = createInputSwitch(input, sum, defaults.active);
+    delay.connect(delayGain);
+    feedback.connect(delay);
+    delayGain.connect(fxReturn);
 
     // Create the DOM nodes
     const pedal = createPedal({
@@ -589,23 +609,25 @@ const load = async LIVE => {
     };
 
     // Create audio nodes
-    const sum = ctx.createGain();
     const reverb = ctx.createConvolver();
     const mixIn = ctx.createGain();
     const mixOut = ctx.createGain();
 
-    const [output, toggle] = createInputSwitch(input, sum, defaults.active);
+    const [fxSend, fxReturn, output, toggle] = createInputSwitchWithTails(
+      input,
+      defaults.active
+    );
 
     // Set default values
     mixIn.gain.value = 1 - defaults.mix;
     mixOut.gain.value = defaults.mix;
 
     // Connect the nodes togther
-    input.connect(reverb);
-    input.connect(mixIn);
+    fxSend.connect(reverb);
+    fxSend.connect(mixIn);
     reverb.connect(mixOut);
-    mixOut.connect(sum);
-    mixIn.connect(sum);
+    mixIn.connect(fxReturn);
+    mixOut.connect(fxReturn);
 
     reverb.buffer = buffer;
 
