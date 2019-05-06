@@ -205,11 +205,11 @@ const load = async LIVE => {
   const delayPedal = function(input, index) {
     // Default settings
     const defaults = {
-      tone: 1200,
+      tone: 1800,
       speed: 0.45,
-      mix: 0.6,
+      mix: 0.8,
       feedback: 0.35,
-      active: false,
+      active: true,
       maxDelay: 1.5
     };
 
@@ -292,9 +292,9 @@ const load = async LIVE => {
     // Default settings
     const defaults = {
       speed: 3,
-      depth: 0.4,
+      depth: 0.3,
       wave: 'sine',
-      active: false
+      active: true
     };
 
     // Create audio nodes
@@ -576,7 +576,7 @@ const load = async LIVE => {
   const reverbPedal = function(input, index) {
     // Default settings
     const defaults = {
-      mix: 0.2,
+      mix: 0.4,
       active: true
     };
 
@@ -594,9 +594,9 @@ const load = async LIVE => {
 
     // Connect the nodes togther
     input.connect(reverb);
+    input.connect(mixIn);
     reverb.connect(mixOut);
     mixOut.connect(sum);
-    input.connect(mixIn);
     mixIn.connect(sum);
 
     reverb.buffer = buffer;
@@ -619,6 +619,7 @@ const load = async LIVE => {
       onInput: event => {
         mixIn.gain.value = 1 - Number(event.target.value);
         mixOut.gain.value = Number(event.target.value);
+        console.log(sum.gain.value);
       }
     });
 
@@ -640,7 +641,7 @@ const load = async LIVE => {
   await fetch('/assets/Conic Long Echo Hall.wav')
     .then(response => response.arrayBuffer())
     .then(data => {
-      ctx.decodeAudioData(data, b => {
+      return ctx.decodeAudioData(data, b => {
         buffer = b;
       });
     });
@@ -655,35 +656,40 @@ const load = async LIVE => {
     console.log('No midi connectivity');
   }
 
-  navigator.mediaDevices
-    .getUserMedia({ audio: true, video: false })
-    .then(stream => {
-      let source;
-
-      if (LIVE) {
-        source = ctx.createMediaStreamSource(stream);
-      } else {
-        source = ctx.createMediaElementSource(audio);
-
-        audio.currentTime = 41;
-        audio.play();
-      }
-
-      const pedals = [
-        wahPedal,
-        boostPedal,
-        chorusPedal,
-        delayPedal,
-        reverbPedal,
-        tremoloPedal
-      ];
-
-      const output = pedals.reduce((input, pedal, index) => {
-        return pedal(input, index + 1);
-      }, source);
-
-      output.connect(ctx.destination);
+  let stream;
+  if (LIVE) {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: false
     });
+  }
+
+  let source;
+
+  if (LIVE) {
+    source = ctx.createMediaStreamSource(stream);
+  } else {
+    source = ctx.createMediaElementSource(audio);
+    audio.muted = false;
+    audio.volume = 1;
+    audio.currentTime = 2;
+    audio.play();
+  }
+
+  const pedals = [
+    wahPedal,
+    boostPedal,
+    chorusPedal,
+    delayPedal,
+    reverbPedal,
+    tremoloPedal
+  ];
+
+  const output = pedals.reduce((input, pedal, index) => {
+    return pedal(input, index + 1);
+  }, source);
+
+  output.connect(ctx.destination);
 };
 
 (() => {
