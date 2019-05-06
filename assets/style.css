@@ -78,21 +78,21 @@ a {
 body {
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
-    font: 400 100%/1.625 'SF Pro Text', -apple-system, BlinkMacSystemFont,
-        Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji,
-        Segoe UI Emoji, Segoe UI Symbol;
-    background: #222;
-    color: #FFF;
-    display: flex;
-    flex-direction: column;
+    font: 400 100%/1.625 'Barlow', sans-serif;
     justify-content: center;
+    flex-direction: column;
     align-items: center;
+    background: #222;
+    display: flex;
+    color: #FFF;
 }
 
 /* Starter */
 .starter {
     text-align: center;
     transition: 800ms opacity;
+    padding: 20px 0;
+    font-size: 1.125em;
 }
 
 body:not(.loading) .starter {
@@ -101,6 +101,7 @@ body:not(.loading) .starter {
 
 h1 {
     font-size: 2rem;
+    margin-top: 0;
 }
 
 .starter:after {
@@ -171,7 +172,7 @@ h1 {
     content: attr(data-type);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.8em;
 }
 

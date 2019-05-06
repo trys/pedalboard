@@ -627,7 +627,6 @@ const load = async LIVE => {
       onInput: event => {
         mixIn.gain.value = 1 - Number(event.target.value);
         mixOut.gain.value = Number(event.target.value);
-        console.log(sum.gain.value);
       }
     });
 
