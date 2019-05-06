@@ -70,6 +70,10 @@ button {
     border: none;
 }
 
+a {
+    color: inherit;
+}
+
 /* Global */
 body {
     -moz-osx-font-smoothing: grayscale;
@@ -86,15 +90,57 @@ body {
 }
 
 /* Starter */
+.starter {
+    text-align: center;
+    transition: 800ms opacity;
+}
+
+body:not(.loading) .starter {
+    opacity: 0;
+}
+
+h1 {
+    font-size: 2rem;
+}
+
+.starter:after {
+    content: '';
+    position: absolute;
+    background: url('/assets/bg.png') center no-repeat;
+    background-size: contain;
+    filter: blur(30px);
+    opacity: 0.5;
+    z-index: -1;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+}
+
 .starter button {
-    background: #FFF;
-    color: #222;
+    background: linear-gradient(#89acaa, #4d6168);
+    color: #FFF;
     font-weight: 700;
     font-size: 1.25rem;
-    padding: 1rem 2rem;
+    padding: 1rem 1.5rem;
     border-radius: 3px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
-    margin: 0 5px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    margin: 0 5px 2rem;
+    transition: 300ms transform;
+}
+
+.starter button:hover {
+    transform: scale(1.02);
+}
+
+.starter button:first-of-type {
+    background: linear-gradient(#FF5722, #eca438);
+}
+
+@media screen and (min-width: 40em) {
+    .starter button {
+        padding: 1rem 2.5rem;
+    }
 }
 
 /* Pedals */

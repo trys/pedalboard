@@ -693,9 +693,12 @@ const load = async LIVE => {
 };
 
 (() => {
-  const getStarted = () => {
-    load(event.target.classList.contains('start--live'));
-    event.target.parentNode.remove();
+  const getStarted = ({ target }) => {
+    document.body.classList.remove('loading');
+    setTimeout(() => {
+      target.parentNode.remove();
+      load(target.classList.contains('start--live'));
+    }, 1000);
   };
 
   [].forEach.call(document.querySelectorAll('.start'), el => {
