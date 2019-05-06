@@ -605,11 +605,13 @@ const load = async LIVE => {
     // Default settings
     const defaults = {
       mix: 0.4,
+      tone: 4000,
       active: true
     };
 
     // Create audio nodes
     const reverb = ctx.createConvolver();
+    const tone = ctx.createBiquadFilter();
     const mixIn = ctx.createGain();
     const mixOut = ctx.createGain();
 
@@ -621,12 +623,15 @@ const load = async LIVE => {
     // Set default values
     mixIn.gain.value = 1 - defaults.mix;
     mixOut.gain.value = defaults.mix;
+    tone.frequency.value = defaults.tone;
 
     // Connect the nodes togther
-    fxSend.connect(reverb);
     fxSend.connect(mixIn);
-    reverb.connect(mixOut);
     mixIn.connect(fxReturn);
+
+    fxSend.connect(reverb);
+    reverb.connect(tone);
+    tone.connect(mixOut);
     mixOut.connect(fxReturn);
 
     reverb.buffer = buffer;
@@ -650,6 +655,17 @@ const load = async LIVE => {
         mixIn.gain.value = 1 - Number(event.target.value);
         mixOut.gain.value = Number(event.target.value);
       }
+    });
+
+    createRotaryKnob({
+      pedal,
+      name: 'tone',
+      label: 'Tone',
+      min: 200,
+      max: 6000,
+      step: 200,
+      onInput: updatePot(tone.frequency),
+      value: defaults.tone
     });
 
     $pedalboard.appendChild(pedal);
