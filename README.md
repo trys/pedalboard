@@ -4,11 +4,6 @@
 - [Accompanying blog post](http://trysmudford.com/blog/pedalboard/)
 - [Video demonstration](https://www.youtube.com/watch?v=OJVmZ7hbVPQ)
 
-Things still to do:
-
-- Better tone pot trim
-- Loading and gesture trigger state
-
 Stretch goals:
 
 - Improve chorus/flanger
