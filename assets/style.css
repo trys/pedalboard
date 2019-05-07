@@ -298,38 +298,40 @@ h1 {
     left: 75%;
 }
 
-/* Chorus */
+/* Pedal styles */
 .pedal--chorus {
     background: linear-gradient(#4bccc8, #9fd6e8);
 }
 
-/* Boost */
 .pedal--boost {
     background: linear-gradient(#FF5722, #eca438);
 }
 
-/* Tremolo */
 .pedal--tremolo {
     background: linear-gradient(#673AB7, #460b50);
 }
 
-/* Delay */
 .pedal--delay {
     background: linear-gradient(#bfe0df, #6d8790);
 }
 
-/* Reverb */
 .pedal--reverb {
     background: linear-gradient(#e689d1, #ab6e4a);
 }
 
-/* Wah */
 .pedal--wah {
     background: linear-gradient(#222, rgb(32, 33, 41));
 }
 
-/* Error */
+.pedal--compressor {
+    background: linear-gradient(#84b75a, rgb(47, 129, 154));
+}
 
+.pedal--overdrive {
+    background: linear-gradient(#a23642, rgb(202, 80, 137));
+}
+
+/* Error */
 .error {
     position: absolute;
     bottom: 1rem;
