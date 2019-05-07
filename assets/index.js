@@ -799,7 +799,7 @@ const load = async LIVE => {
     // Create the DOM nodes
     const pedal = createPedal({
       name: 'overdrive',
-      label: 'Drive',
+      label: 'Math.pow()',
       toggle,
       active: defaults.active,
       index
