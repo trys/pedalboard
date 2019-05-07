@@ -676,7 +676,7 @@ const load = async LIVE => {
   const compressorPedal = function(input, index) {
     // Default settings
     const defaults = {
-      mix: 0.75,
+      mix: 0.85,
       threshold: -30,
       attack: 0.1,
       release: 0.5,
