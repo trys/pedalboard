@@ -327,6 +327,10 @@ h1 {
     background: linear-gradient(#84b75a, rgb(47, 129, 154));
 }
 
+.pedal--overdrive {
+    background: linear-gradient(#a23642, rgb(202, 80, 137));
+}
+
 /* Error */
 .error {
     position: absolute;
