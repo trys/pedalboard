@@ -63,7 +63,6 @@ const load = async LIVE => {
 
       const disengage = event => {
         engaged = false;
-        event.preventDefault();
       };
 
       const rotaryMove = Y => {
