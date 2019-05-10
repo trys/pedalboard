@@ -249,6 +249,7 @@ h1 {
 }
 
 .pedal__on-off label {
+    -webkit-tap-highlight-color: transparent;
     width: 60px;
     height: 60px;
     border-radius: 100%;
