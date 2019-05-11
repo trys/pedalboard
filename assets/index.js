@@ -862,10 +862,14 @@ const load = async LIVE => {
     });
 
     audio.addEventListener('ended', e => {
-      if (recordHead === STATES.cease || recorder.state !== 'inactive') {
+      if (recorder.state === 'recording') {
+        recordHead = STATES.idle;
+        recorder.stop();
+      }
+
+      if (recordHead === STATES.cease) {
         recordHead = STATES.idle;
         led.dataset.state = '';
-        recorder.stop();
         return;
       }
 
@@ -875,7 +879,8 @@ const load = async LIVE => {
       }
 
       e.target.play();
-      led.dataset.state = STATES.recording ? 'overdubbing' : 'playing';
+      led.dataset.state =
+        recordHead === STATES.recording ? 'overdubbing' : 'playing';
     });
 
     // Set default values
@@ -916,9 +921,11 @@ const load = async LIVE => {
     pedal.appendChild(cassette);
 
     const led = pedal.querySelector('.pedal__led');
+    const loopButton = pedal.querySelector('[aria-label="Loop"]');
+    const stopButton = pedal.querySelector('[aria-label="Stop"]');
     led.dataset.state = '';
 
-    pedal.querySelector('[aria-label="Loop"]').addEventListener('click', () => {
+    loopButton.addEventListener('click', () => {
       if (recordHead === STATES.empty) {
         if (recorder.state === 'inactive') {
           led.dataset.state = 'recording';
@@ -932,17 +939,41 @@ const load = async LIVE => {
       }
     });
 
-    pedal.querySelector('[aria-label="Stop"]').addEventListener('click', () => {
+    stopButton.addEventListener('click', () => {
       if (recorder.state === 'recording') {
         recordHead = STATES.cease;
         recorder.stop();
         return;
       }
 
-      recordHead = STATES.cease;
+      recordHead = audio.paused ? STATES.idle : STATES.cease;
       led.dataset.state = audio.paused ? 'playing' : '';
       audio[audio.paused ? 'play' : 'pause']();
       audio.currentTime = 0;
+    });
+
+    window.addEventListener('MIDI', ({ detail }) => {
+      if (detail === 121) {
+        loopButton.dispatchEvent(
+          new Event('click', {
+            bubbles: true,
+            cancelable: true
+          })
+        );
+      } else if (detail === 122) {
+        stopButton.dispatchEvent(
+          new Event('click', {
+            bubbles: true,
+            cancelable: true
+          })
+        );
+      } else if (detail === 123) {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.removeAttribute('src');
+        recordHead = STATES.empty;
+        led.dataset.state = '';
+      }
     });
 
     createRotaryKnob({
@@ -997,8 +1028,6 @@ const load = async LIVE => {
 
   let stream;
   if (LIVE) {
-    const a = await navigator.mediaDevices.enumerateDevices();
-    console.log(a);
     stream = await navigator.mediaDevices
       .getUserMedia({
         audio: true,
