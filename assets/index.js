@@ -227,9 +227,9 @@ const load = async LIVE => {
     const defaults = {
       tone: 2200,
       speed: 0.45,
-      mix: 0.7,
+      mix: 0.4,
       feedback: 0.4,
-      active: false,
+      active: true,
       maxDelay: 1.5
     };
 
@@ -316,7 +316,7 @@ const load = async LIVE => {
       speed: 3,
       depth: 0.3,
       wave: 'sine',
-      active: false
+      active: true
     };
 
     // Create audio nodes
