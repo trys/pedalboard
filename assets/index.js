@@ -234,7 +234,7 @@ const load = async LIVE => {
       speed: 0.45,
       mix: 0.7,
       feedback: 0.4,
-      active: true,
+      active: false,
       maxDelay: 1.5
     };
 
@@ -321,7 +321,7 @@ const load = async LIVE => {
       speed: 3,
       depth: 0.3,
       wave: 'sine',
-      active: true
+      active: false
     };
 
     // Create audio nodes
@@ -843,14 +843,33 @@ const load = async LIVE => {
     const volume = ctx.createGain();
 
     const streamer = ctx.createMediaStreamDestination();
-
     const recorder = new MediaRecorder(streamer.stream);
     const audio = document.createElement('audio');
+    const STATES = {
+      empty: 'empty',
+      recording: 'recording',
+      prepared: 'prepared',
+      idle: 'idle'
+    };
+    let recordHead = STATES.empty;
 
     recorder.addEventListener('dataavailable', e => {
       audio.src = URL.createObjectURL(e.data);
       audio.play();
-      audio.loop = true;
+    });
+
+    audio.addEventListener('ended', e => {
+      if (recorder.state !== 'inactive') {
+        recordHead = STATES.idle;
+        recorder.stop();
+      } else {
+        if (recordHead === STATES.prepared) {
+          recordHead = STATES.recording;
+          recorder.start();
+        }
+
+        e.target.play();
+      }
     });
 
     // Set default values
@@ -870,10 +889,15 @@ const load = async LIVE => {
       name: 'looper',
       label: 'for(loop)',
       toggle: () => {
-        if (recorder.state === 'inactive') {
-          recorder.start();
+        if (recordHead === STATES.empty) {
+          if (recorder.state === 'inactive') {
+            recorder.start();
+          } else {
+            recordHead = STATES.idle;
+            recorder.stop();
+          }
         } else {
-          recorder.stop();
+          recordHead = STATES.prepared;
         }
       },
       active: defaults.active,
@@ -884,7 +908,7 @@ const load = async LIVE => {
     cassette.classList.add('cassette');
     cassette.innerHTML = `<span class="cassette__window"></span>
     <span class="cassette__head"></span>
-    <span class="cassette__head"></span>`
+    <span class="cassette__head"></span>`;
     pedal.appendChild(cassette);
 
     createRotaryKnob({
@@ -939,6 +963,8 @@ const load = async LIVE => {
 
   let stream;
   if (LIVE) {
+    const a = await navigator.mediaDevices.enumerateDevices();
+    console.log(a);
     stream = await navigator.mediaDevices
       .getUserMedia({
         audio: true,
