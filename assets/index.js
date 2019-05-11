@@ -830,6 +830,86 @@ const load = async LIVE => {
     return output;
   };
 
+  const loopPedal = function(input, index) {
+    // Default settings
+    const defaults = {
+      mix: 1,
+      active: false
+    };
+
+    // Create audio nodes
+    const sum = ctx.createGain();
+    const mixIn = ctx.createGain();
+    const mixOut = ctx.createGain();
+
+    const subIn = ctx.createMediaStreamDestination();
+    input.connect(subIn);
+    const recorder = new MediaRecorder(subIn.stream);
+    const audio = document.createElement('audio');
+    let chunks = [];
+
+    recorder.addEventListener('dataavailable', e => {
+      // chunks.push(e.data)
+      console.log(e.data);
+      audio.src = URL.createObjectURL(e.data);
+      audio.play();
+      audio.controls = true;
+    });
+    recorder.onstop = e => {
+      // var blob = new Blob(chunks, { type: 'audio/ogg; codecs=opus' });
+      // chunks = [];
+      // var audioURL = URL.createObjectURL(blob);
+      // console.log(audioURL);
+      // audio.src = audioURL;
+      // audio.controls = true;
+    };
+
+    const [output, toggle] = createInputSwitch(input, sum, defaults.active);
+
+    // Set default values
+    mixIn.gain.value = 1 - defaults.mix;
+    mixOut.gain.value = defaults.mix;
+
+    // Connect the nodes togther
+    input.connect(mixOut);
+    mixOut.connect(sum);
+    input.connect(mixIn);
+    mixIn.connect(sum);
+
+    // Create the DOM nodes
+    const pedal = createPedal({
+      name: 'looper',
+      label: 'for(loop)',
+      toggle: () => {
+        if (recorder.state === 'inactive') {
+          recorder.start();
+        } else {
+          recorder.stop();
+        }
+        toggle();
+      },
+      active: defaults.active,
+      index
+    });
+
+    pedal.appendChild(audio);
+
+    createRotaryKnob({
+      pedal,
+      name: 'mix',
+      label: 'Mix',
+      value: defaults.mix,
+      onInput: event => {
+        mixIn.gain.value = 1 - Number(event.target.value);
+        mixOut.gain.value = Number(event.target.value);
+      }
+    });
+
+    $pedalboard.appendChild(pedal);
+
+    return output;
+  };
+
   const onError = (message = '') => {
     const error = document.createElement('div');
     error.innerHTML = message;
@@ -889,14 +969,15 @@ const load = async LIVE => {
   }
 
   const pedals = [
-    wahPedal,
-    compressorPedal,
-    overdrivePedal,
-    boostPedal,
-    chorusPedal,
-    delayPedal,
-    reverbPedal,
-    tremoloPedal
+    loopPedal
+    // wahPedal,
+    // compressorPedal,
+    // overdrivePedal,
+    // boostPedal,
+    // chorusPedal,
+    // delayPedal,
+    // reverbPedal,
+    // tremoloPedal
   ];
 
   const output = pedals.reduce((input, pedal, index) => {
