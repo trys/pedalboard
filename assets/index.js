@@ -1,4 +1,5 @@
 const load = async LIVE => {
+  const DEV = false;
   const ctx = new window.AudioContext();
   const audio = document.querySelector('audio');
   const $pedalboard = document.querySelector('.pedalboard');
@@ -145,21 +146,15 @@ const load = async LIVE => {
 
   const createPedal = ({ name, label, toggle, active, index = 0 }) => {
     const pedal = document.createElement('div');
-    const list = document.createElement('ul');
-    const title = document.createElement('h2');
-    const onOff = document.createElement('button');
-
     pedal.innerHTML = `<ul class="pedal__controls"></ul>
     <div class="pedal__on-off">
       <input id="${name}_active" type="checkbox" ${active ? 'checked' : ''} />
       <output class="pedal__led"></output>
-      <label for="${name}_active">Enable / Disable</label>
+      <label for="${name}_active" class="pedal__button">Enable / Disable</label>
     </div>
     <h2>${label}</h2>
     <span class="pedal__jack"></span>
     <span class="pedal__jack"></span>`;
-
-    title.innerText = label;
 
     const input = pedal.querySelector('[type="checkbox"]');
     input.addEventListener('change', () => toggle());
@@ -833,8 +828,7 @@ const load = async LIVE => {
   const loopPedal = function(input, index) {
     // Default settings
     const defaults = {
-      volume: 1,
-      active: false
+      volume: 1
     };
 
     // Create audio nodes
@@ -849,27 +843,39 @@ const load = async LIVE => {
       empty: 'empty',
       recording: 'recording',
       prepared: 'prepared',
-      idle: 'idle'
+      idle: 'idle',
+      cease: 'cease'
     };
     let recordHead = STATES.empty;
 
     recorder.addEventListener('dataavailable', e => {
       audio.src = URL.createObjectURL(e.data);
+
+      if (recordHead === STATES.cease) {
+        recordHead = STATES.idle;
+        led.dataset.state = '';
+        return;
+      }
+
       audio.play();
+      led.dataset.state = 'playing';
     });
 
     audio.addEventListener('ended', e => {
-      if (recorder.state !== 'inactive') {
+      if (recordHead === STATES.cease || recorder.state !== 'inactive') {
         recordHead = STATES.idle;
+        led.dataset.state = '';
         recorder.stop();
-      } else {
-        if (recordHead === STATES.prepared) {
-          recordHead = STATES.recording;
-          recorder.start();
-        }
-
-        e.target.play();
+        return;
       }
+
+      if (recordHead === STATES.prepared) {
+        recordHead = STATES.recording;
+        recorder.start();
+      }
+
+      e.target.play();
+      led.dataset.state = STATES.recording ? 'overdubbing' : 'playing';
     });
 
     // Set default values
@@ -884,25 +890,23 @@ const load = async LIVE => {
     audioOut.connect(mixIn); // Loop back around for overdubbing
     volume.connect(output);
 
-    // Create the DOM nodes
-    const pedal = createPedal({
-      name: 'looper',
-      label: 'for(loop)',
-      toggle: () => {
-        if (recordHead === STATES.empty) {
-          if (recorder.state === 'inactive') {
-            recorder.start();
-          } else {
-            recordHead = STATES.idle;
-            recorder.stop();
-          }
-        } else {
-          recordHead = STATES.prepared;
-        }
-      },
-      active: defaults.active,
-      index
-    });
+    const name = 'looper';
+    const pedal = document.createElement('div');
+    pedal.innerHTML = `<ul class="pedal__controls"></ul>
+    <div class="pedal__on-off">
+      <output class="pedal__led"></output>
+      <div class="pedal__double-button">
+        <button type="button" class="pedal__button" data-label aria-label="Loop"></button>
+        <button type="button" class="pedal__button" data-label aria-label="Stop"></button>
+      </div>
+    </div>
+    <h2>for(loop)</h2>
+    <span class="pedal__jack"></span>
+    <span class="pedal__jack"></span>`;
+
+    pedal.classList.add('pedal');
+    pedal.classList.add(`pedal--${name}`);
+    pedal.dataset.type = name;
 
     const cassette = document.createElement('div');
     cassette.classList.add('cassette');
@@ -910,6 +914,36 @@ const load = async LIVE => {
     <span class="cassette__head"></span>
     <span class="cassette__head"></span>`;
     pedal.appendChild(cassette);
+
+    const led = pedal.querySelector('.pedal__led');
+    led.dataset.state = '';
+
+    pedal.querySelector('[aria-label="Loop"]').addEventListener('click', () => {
+      if (recordHead === STATES.empty) {
+        if (recorder.state === 'inactive') {
+          led.dataset.state = 'recording';
+          recorder.start();
+        } else {
+          recordHead = STATES.idle;
+          recorder.stop();
+        }
+      } else {
+        recordHead = STATES.prepared;
+      }
+    });
+
+    pedal.querySelector('[aria-label="Stop"]').addEventListener('click', () => {
+      if (recorder.state === 'recording') {
+        recordHead = STATES.cease;
+        recorder.stop();
+        return;
+      }
+
+      recordHead = STATES.cease;
+      led.dataset.state = audio.paused ? 'playing' : '';
+      audio[audio.paused ? 'play' : 'pause']();
+      audio.currentTime = 0;
+    });
 
     createRotaryKnob({
       pedal,
@@ -980,7 +1014,7 @@ const load = async LIVE => {
   } else {
     source = ctx.createMediaElementSource(audio);
     audio.muted = false;
-    audio.volume = 1;
+    audio.volume = DEV ? 0 : 1;
     audio.currentTime = 2;
     audio.play();
   }
