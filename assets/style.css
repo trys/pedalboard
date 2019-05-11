@@ -289,10 +289,9 @@ h1 {
     bottom: 100%;
     width: 40px;
     height: 20px;
-    background: linear-gradient(to left, silver, grey);
+    background: linear-gradient(to left, rgba(192, 192, 192, 0.2), rgba(121, 121, 121, 0.2));
     transform: translateX(-50%);
-    box-shadow: 0 -2px 2px rgba(0, 0, 0, 0.8);
-    opacity: 0.2;
+    box-shadow: 0 -2px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pedal__jack + .pedal__jack {
@@ -332,6 +331,84 @@ h1 {
     background: linear-gradient(#a23642, rgb(202, 80, 137));
 }
 
+.pedal--looper {
+    background: linear-gradient(#36a248, rgb(45, 76, 59));
+}
+
+.cassette {
+    /* position: absolute; */
+    order: -1;
+    align-self: flex-start;
+    justify-self: flex-start;
+    background: #333;
+    border-radius: 25px;
+    height: 50px;
+    width: calc(100% - 40px);
+    margin: 0 20px 20px;
+    position: relative;
+}
+
+.cassette__head {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 100%;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.8);
+    animation: 2s spin linear infinite;
+}
+
+.cassette__head:after {
+    content: '';
+    background: #FFF;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    -webkit-clip-path: polygon(50% 0%, 83% 12%, 100% 43%, 94% 78%, 68% 100%, 32% 100%, 6% 78%, 0% 43%, 17% 12%);
+    clip-path: polygon(50% 0%, 83% 12%, 100% 43%, 94% 78%, 68% 100%, 32% 100%, 6% 78%, 0% 43%, 17% 12%);
+}
+
+.cassette__head + .cassette__head {
+    left: auto;
+    right: 5px;
+}
+
+.cassette__window {
+    width: 70px;
+    height: 40px;
+    top: 5px;
+    background: #FFF;
+    left: 50%;
+    transform: translateX(-50%);
+    overflow: hidden;
+    position: absolute;
+    border-radius: 3px;
+}
+
+.cassette__window:before,
+.cassette__window:after {
+    height: 80px;
+    width: 80px;
+    top: 50%;
+    margin-top: -40px;
+    background: #222;
+    position: absolute;
+    left: -55px;
+    content: '';
+    border-radius: 100% 95%;
+    animation: 2s spin linear infinite;
+}
+
+.cassette__window:after {
+    left: auto;
+    right: -70px;
+}
+
 /* Error */
 .error {
     position: absolute;
@@ -343,4 +420,10 @@ h1 {
     text-align: center;
     width: calc(100% - 2rem);
     max-width: 400px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(1turn);
+    }
 }
