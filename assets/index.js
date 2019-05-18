@@ -401,6 +401,8 @@ const load = async LIVE => {
     // Create audio nodes
     const sum = ctx.createGain();
     const chorus = ctx.createDelay();
+    const chorus2 = ctx.createDelay();
+    const chorus3 = ctx.createDelay();
     const mixIn = ctx.createGain();
     const mixOut = ctx.createGain();
 
@@ -410,12 +412,14 @@ const load = async LIVE => {
     mixIn.gain.value = 1 - defaults.mix;
     mixOut.gain.value = defaults.mix;
 
-    const step = 0.0001;
-    const min = 0.02;
-    const max = 0.024;
+    const step = 0.001;
+    const min = 0.015;
+    const max = 0.025;
     let timeModulation = min;
     let goingUp = true;
     chorus.delayTime.value = timeModulation;
+    chorus2.delayTime.value = timeModulation + step;
+    chorus3.delayTime.value = timeModulation + step + step;
 
     const modulate = () => {
       if (goingUp) {
@@ -432,6 +436,8 @@ const load = async LIVE => {
       }
 
       chorus.delayTime = timeModulation;
+      chorus2.delayTime = timeModulation + step;
+      chorus3.delayTime = timeModulation + step + step;
       requestAnimationFrame(modulate);
     };
 
@@ -439,7 +445,11 @@ const load = async LIVE => {
 
     // Connect the nodes togther
     input.connect(chorus);
+    input.connect(chorus2);
+    input.connect(chorus3);
     chorus.connect(mixOut);
+    chorus2.connect(mixOut);
+    chorus3.connect(mixOut);
     mixOut.connect(sum);
     input.connect(mixIn);
     mixIn.connect(sum);
