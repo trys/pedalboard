@@ -314,7 +314,7 @@ const load = async LIVE => {
   const harmonicTremoloPedal = function(input, index) {
     // Default settings
     const defaults = {
-      active: true,
+      active: false,
       speed: 4.4,
       depth: 0.54
     };
@@ -418,7 +418,7 @@ const load = async LIVE => {
       speed: 3,
       depth: 0.3,
       wave: 'sine',
-      active: false
+      active: true
     };
 
     // Create audio nodes
