@@ -351,6 +351,10 @@ h1 {
     background: linear-gradient(#673AB7, #460b50);
 }
 
+.pedal--harmonic-tremolo {
+    background: linear-gradient(#6d522a, #2f2e2c);
+}
+
 .pedal--delay {
     background: linear-gradient(#bfe0df, #6d8790);
 }

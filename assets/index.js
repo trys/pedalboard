@@ -146,11 +146,12 @@ const load = async LIVE => {
 
   const createPedal = ({ name, label, toggle, active, index = 0 }) => {
     const pedal = document.createElement('div');
+    const id = name.replace(/\s/g, '-')
     pedal.innerHTML = `<ul class="pedal__controls"></ul>
     <div class="pedal__on-off">
-      <input id="${name}_active" type="checkbox" ${active ? 'checked' : ''} />
+      <input id="${id}_active" type="checkbox" ${active ? 'checked' : ''} />
       <output class="pedal__led"></output>
-      <label for="${name}_active" class="pedal__button">Enable / Disable</label>
+      <label for="${id}_active" class="pedal__button">Enable / Disable</label>
     </div>
     <h2>${label}</h2>
     <span class="pedal__jack"></span>
@@ -167,7 +168,7 @@ const load = async LIVE => {
     });
 
     pedal.classList.add('pedal');
-    pedal.classList.add(`pedal--${name}`);
+    pedal.classList.add(`pedal--${id}`);
     pedal.dataset.type = name;
 
     return pedal;
@@ -227,7 +228,7 @@ const load = async LIVE => {
     const defaults = {
       tone: 2200,
       speed: 0.45,
-      mix: 0.4,
+      mix: 0.3,
       feedback: 0.4,
       active: true,
       maxDelay: 1.5
@@ -310,13 +311,114 @@ const load = async LIVE => {
     return output;
   };
 
+  const harmonicTremoloPedal = function(input, index) {
+    // Default settings
+    const defaults = {
+      active: true,
+      speed: 4.4,
+      depth: 0.54
+    };
+
+    const finalOutput = ctx.createGain();
+    const [output, toggle] = createInputSwitch(input, finalOutput, defaults.active);
+    
+    // Create audio nodes
+    const passThrough = ctx.createGain();
+    const sum = ctx.createGain();
+
+    passThrough.gain.value = 1 - defaults.depth;
+    sum.gain.value = defaults.depth;
+
+    // High pass
+    const highPass = ctx.createBiquadFilter();
+    const highPassOut = ctx.createGain();
+    const highPassOsc = ctx.createOscillator();
+
+    highPass.type = 'highpass';
+    highPass.frequency.value = 4000;
+    highPassOsc.frequency.value = defaults.speed;
+
+    // Low pass
+    const lowPass = ctx.createBiquadFilter();
+    const lowPassOut = ctx.createGain();
+    const lowPassPhase = ctx.createGain();
+    const lowPassOsc = ctx.createOscillator();
+    lowPass.frequency.value = 800;
+    lowPass.type = 'lowpass'
+    lowPassPhase.gain.value = -1;
+    lowPassOsc.frequency.value = defaults.speed;
+    lowPassOsc.detune.value = -180;
+
+    // Connect the nodes
+    // Oscillator
+    lowPassOsc.connect(lowPassOut.gain)
+    lowPassOsc.start()
+    highPassOsc.connect(highPassOut.gain)
+    highPassOsc.start()
+
+    // Pass through
+    input.connect(passThrough)
+    passThrough.connect(finalOutput)
+
+    // High pass
+    input.connect(highPass)
+    highPass.connect(highPassOut)
+    highPassOut.connect(sum)
+
+    // Low pass
+    input.connect(lowPass)
+    lowPass.connect(lowPassPhase)
+    lowPassPhase.connect(lowPassOut)
+    lowPassOut.connect(sum)
+
+    sum.connect(finalOutput)
+
+    // Create the DOM nodes
+    const pedal = createPedal({
+      name: 'harmonic tremolo',
+      label: 'rotate(180deg)',
+      toggle,
+      active: defaults.active,
+      index
+    });
+
+    createRotaryKnob({
+      pedal,
+      name: 'speed',
+      label: 'Speed',
+      max: 8,
+      value: defaults.speed,
+      onInput: event => {
+        const val = Number(event.target.value);
+        lowPassOsc.frequency.value = val;
+        highPassOsc.frequency.value = val;
+      }
+    })
+
+    createRotaryKnob({
+      pedal,
+      name: 'depth',
+      label: 'Depth',
+      value: defaults.depth,
+      onInput: event => {
+        const val = Number(event.target.value);
+        passThrough.gain.value = 1 - val;
+        sum.gain.value = val;
+      }
+    })
+
+    $pedalboard.appendChild(pedal);
+
+    return output;
+  };
+  
   const tremoloPedal = function(input, index) {
     // Default settings
     const defaults = {
       speed: 3,
       depth: 0.3,
       wave: 'sine',
-      active: true
+      active: false
     };
 
     // Create audio nodes
@@ -608,7 +710,7 @@ const load = async LIVE => {
   const reverbPedal = function(input, index) {
     // Default settings
     const defaults = {
-      mix: 0.4,
+      mix: 0.3,
       tone: 4000,
       active: true
     };
@@ -1064,6 +1166,7 @@ const load = async LIVE => {
     overdrivePedal,
     boostPedal,
     chorusPedal,
+    harmonicTremoloPedal,
     delayPedal,
     reverbPedal,
     tremoloPedal,
