@@ -150,6 +150,7 @@ h1 {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: flex-end;
     padding: 20px 0;
     width: 100%;
 }
@@ -171,6 +172,7 @@ h1 {
     align-items: center;
     position: relative;
     text-shadow: -0.05em 0.05em rgba(0, 0, 0, 0.2);
+    min-height: 424px;
 }
 
 .pedal:after {
@@ -185,6 +187,7 @@ h1 {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
     max-width: 280px;
     flex: 1;
 }
@@ -355,6 +358,15 @@ h1 {
     background: linear-gradient(#6d522a, #2f2e2c);
 }
 
+.pedal--multihead-delay {
+    background: #000;
+    flex-basis: 700px;
+}
+
+.pedal--multihead-delay ul {
+    max-width: 100%;
+}
+
 .pedal--delay {
     background: linear-gradient(#bfe0df, #6d8790);
 }
@@ -473,4 +485,109 @@ h1 {
     to {
         transform: rotate(1turn);
     }
+}
+
+/* Toggle */
+
+.pedal-toggle-label {
+    padding-bottom: 30px;
+    position: relative;
+    cursor: pointer;
+}
+
+.pedal-toggle-label:before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    background: linear-gradient(#efefef, #dfdfdf);
+    border-radius: 100%;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+}
+
+:checked + .pedal-toggle-label:before {
+    box-shadow: 0 0 5px 0 red;
+    background: red;
+}
+
+/* Multihead delay */
+
+.pedal--multihead-delay ul > * {
+    flex-basis: calc(25% - 10px);
+}
+
+.pedal--multihead-delay .pedal__controls {
+    flex-direction: column;
+}
+
+.delay-head {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.sub-pedal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: row;
+    position: relative;
+    padding: 20px 5px 5px 5px;
+    margin: 0 5px;
+    min-width: 200px;
+    flex: 1;
+    background: var(--sub-pedal-background);
+}
+
+.sub-pedal:before {
+    content: attr(data-type);
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    font-size: 0.8em;
+}
+
+.sub-pedal:not(:last-child):after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent var(--sub-pedal-background);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateX(-50%);
+}
+
+.sub-pedal > * {
+    margin: 0.5rem;
+}
+
+.sub-pedal .pedal__knob {
+    width: 50px;
+    height: 50px;
+}
+
+.sub-pedal-delay {
+    --sub-pedal-background: #175772;
+}
+
+.sub-pedal-chorus {
+    --sub-pedal-background: #39A0C7;
+}
+
+.sub-pedal-eq {
+    --sub-pedal-background: #7E8A89;
+}
+
+.sub-pedal-mix {
+    --sub-pedal-background: #ACB5B8;
 }
