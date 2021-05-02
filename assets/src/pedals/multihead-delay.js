@@ -8,7 +8,7 @@ export const multiHeadDelay = function(input, index) {
     highs: 1,
     speed: 0.45,
     mix: 0.3,
-    feedback: 0.5,
+    feedback: 0.3,
     active: true,
     maxDelay: 1.5,
     filter: 'highpass',
@@ -214,10 +214,10 @@ export const multiHeadDelay = function(input, index) {
   });
 
   fxSend.connect(fxReturn);
-  createDelayHead(fxSend, fxReturn, 1, 0.300, 0.5);
-  createDelayHead(fxSend, fxReturn, -1, 0.463, 0.5);
-  createDelayHead(fxSend, fxReturn, 0.5, 0.97561, 0.2);
-  createDelayHead(fxSend, fxReturn, -0.5, 0.4878, 0.2);
+  createDelayHead(fxSend, fxReturn, 1, 0.300, 0.3);
+  createDelayHead(fxSend, fxReturn, -1, 0.463, 0.3);
+  createDelayHead(fxSend, fxReturn, 0.5, 0.97561, 0.1);
+  createDelayHead(fxSend, fxReturn, -0.5, 0.4878, 0.1);
 
   $pedalboard.appendChild(pedal);
 

@@ -45,7 +45,7 @@ export const tremoloPedal = function(input, index) {
     pedal,
     name: 'speed',
     label: 'Speed',
-    max: 4,
+    max: 6,
     onInput: updatePot(lfo.frequency),
     value: defaults.speed
   });
@@ -66,7 +66,7 @@ export const tremoloPedal = function(input, index) {
     name: 'wave',
     label: 'Wave',
     value: defaults.wave,
-    onInput: updatePot(lfo.type),
+    onInput: updatePot(lfo, 'type'),
     options: [
       { label: 'Sine', value: 'sine' },
       { label: 'Square', value: 'square' },

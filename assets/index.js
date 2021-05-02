@@ -8,6 +8,7 @@ import { harmonicTremoloPedal } from './src/pedals/harmonic-tremolo.js';
 import { boostPedal } from './src/pedals/boost.js';
 import { compressorPedal } from './src/pedals/compressor.js';
 import { overdrivePedal } from './src/pedals/overdrive.js';
+import { chorusPedal } from './src/pedals/chorus.js';
 
 
 const load = async LIVE => {
@@ -85,6 +86,7 @@ const load = async LIVE => {
     overdrivePedal,
     boostPedal,
     harmonicTremoloPedal,
+    chorusPedal,
     delayPedal,
     multiHeadDelay,
     tremoloPedal,
