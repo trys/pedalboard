@@ -21,48 +21,6 @@ export const chorusPedal = function(input, index) {
   mixIn.gain.value = 1 - defaults.mix;
   mixOut.gain.value = defaults.mix;
 
-  // const step = 0.001;
-  // const min = 0.015;
-  // const max = 0.025;
-  // let timeModulation = min;
-  // let goingUp = true;
-  // chorus.delayTime.value = timeModulation;
-  // chorus2.delayTime.value = timeModulation + step;
-  // chorus3.delayTime.value = timeModulation + step + step;
-
-  // const modulate = () => {
-  //   if (goingUp) {
-  //     timeModulation += step;
-  //     if (timeModulation >= max) {
-  //       goingUp = false;
-  //     }
-  //   } else {
-  //     timeModulation -= step;
-
-  //     if (timeModulation <= min) {
-  //       goingUp = true;
-  //     }
-  //   }
-
-  //   chorus.delayTime.value = timeModulation;
-  //   chorus2.delayTime.value = timeModulation + step;
-  //   chorus3.delayTime.value = timeModulation + step + step;
-  //   requestAnimationFrame(modulate);
-  // };
-
-  // requestAnimationFrame(modulate);
-
-  // // Connect the nodes togther
-  // input.connect(chorus);
-  // input.connect(chorus2);
-  // input.connect(chorus3);
-  // chorus.connect(mixOut);
-  // chorus2.connect(mixOut);
-  // chorus3.connect(mixOut);
-  // mixOut.connect(sum);
-  // input.connect(mixIn);
-  // mixIn.connect(sum);
-
   const chorus1Delay = ctx.createDelay();
   const chorus1Sum = ctx.createGain();
   const chorus1LFO = ctx.createOscillator();
