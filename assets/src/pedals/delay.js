@@ -3,11 +3,11 @@ import { updatePot, createRotaryKnob, createPedal, createInputSwitchWithTails } 
 export const delayPedal = function(input, index) {
   // Default settings
   const defaults = {
-    tone: 2200,
+    tone: 3200,
     speed: 0.45,
     mix: 0.3,
     feedback: 0.4,
-    active: false,
+    active: true,
     maxDelay: 1.5
   };
 

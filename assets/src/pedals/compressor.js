@@ -7,7 +7,7 @@ export const compressorPedal = function(input, index) {
     threshold: -30,
     attack: 0.1,
     release: 0.5,
-    active: false
+    active: true
   };
 
   // Create audio nodes

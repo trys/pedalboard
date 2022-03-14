@@ -6,7 +6,7 @@ export const chorusPedal = function(input, index) {
     mix: 0.3,
     depth: 0.001,
     rate: 1.3,
-    active: false
+    active: true
   };
 
   // Create audio nodes

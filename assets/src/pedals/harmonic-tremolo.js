@@ -4,8 +4,8 @@ export const harmonicTremoloPedal = function(input, index) {
   // Default settings
   const defaults = {
     active: false,
-    speed: 4.4,
-    depth: 0.54
+    speed: 3.2,
+    depth: 0.5
   };
 
   const finalOutput = ctx.createGain();

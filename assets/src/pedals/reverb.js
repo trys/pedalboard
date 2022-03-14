@@ -3,7 +3,7 @@ import { updatePot, createRotaryKnob, createPedal, createInputSwitchWithTails } 
 export const reverbPedal = function(input, index) {
   // Default settings
   const defaults = {
-    mix: 0.2,
+    mix: 0.35,
     tone: 4000,
     active: true
   };

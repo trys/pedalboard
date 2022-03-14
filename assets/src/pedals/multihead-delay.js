@@ -9,7 +9,7 @@ export const multiHeadDelay = function(input, index) {
     speed: 0.45,
     mix: 0.3,
     feedback: 0.3,
-    active: true,
+    active: false,
     maxDelay: 1.5,
     filter: 'highpass',
     depth: 0.0005,
